@@ -11,7 +11,7 @@ H3_spline <- readRDS(paste0(dropboxDir,"results/stress-growth-models/figure-data
 H4_spline <- readRDS(paste0(dropboxDir,"results/stress-growth-models/figure-data/H4_adj_spline_data.RDS"))
 
 #load results for quartiles
-H1_quartiles <- readRDS(here("results/adjusted/H1_adj_res.RDS"))
+H1_quartiles <- readRDS(here("results/unadjusted/H1_res.RDS"))
 H2_quartiles <- readRDS(here("results/adjusted/H2_adj_res.RDS"))
 H3_quartiles <- readRDS(here("results/adjusted/H3_adj_res.RDS"))
 H4_quartiles <- readRDS(here("results/adjusted/H4_adj_res.RDS"))

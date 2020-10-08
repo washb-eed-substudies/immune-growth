@@ -5,15 +5,15 @@ library('officer')
 source(here::here("0-config.R"))
 
 # load enrollment characteristics and results
-d <- read.csv(paste0(dropboxDir, "Data/Cleaned/Audrie/bangladesh-dm-ee-stress-growth-covariates-stresslab-anthro.csv"))
-H1 <- readRDS(here('results/unadjusted/H1_res.RDS'))
-H2 <- readRDS(here('results/unadjusted/H2_res.RDS'))
-H3 <- readRDS(here('results/unadjusted/H3_res.RDS'))
-H4 <- readRDS(here('results/unadjusted/H4_res.RDS'))
-H1adj <- readRDS(here('results/adjusted/H1_adj_res.RDS'))
-H2adj <- readRDS(here('results/adjusted/H2_adj_res.RDS'))
-H3adj <- readRDS(here('results/adjusted/H3_adj_res.RDS'))
-H4adj <- readRDS(here('results/adjusted/H4_adj_res.RDS'))
+d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
+# H1 <- readRDS(here('results/unadjusted/H1_res.RDS'))
+# H2 <- readRDS(here('results/unadjusted/H2_res.RDS'))
+# H3 <- readRDS(here('results/unadjusted/H3_res.RDS'))
+# H4 <- readRDS(here('results/unadjusted/H4_res.RDS'))
+# H1adj <- readRDS(here('results/adjusted/H1_adj_res.RDS'))
+# H2adj <- readRDS(here('results/adjusted/H2_adj_res.RDS'))
+# H3adj <- readRDS(here('results/adjusted/H3_adj_res.RDS'))
+# H4adj <- readRDS(here('results/adjusted/H4_adj_res.RDS'))
 
 
 #### Functions for growth tables ####
@@ -129,6 +129,8 @@ n_med_col <- c(nperc(d$sex), mediqr(d$t2_f2_8ip), mediqr(d$t2_f2_23d), mediqr(d$
                mediqr(d$momeduy), mediqr(d$cesd_sum_t2), mediqr(d$cesd_sum_ee_t3), mediqr(d$pss_sum_mom_t3), 
                nperc(d$life_viol_any_t3))
 
+
+#immune markers, anthropometry (Y1, Y2)
 tbl1 <- data.table(" " = c("Child","","","","","","","","","","","","","","","","","","","","","","","Mother","","","","","",""),
                    " " = c("", "Urinary F2-isoprostanes (Year 1)","","","", "Salivary cortisol reactivity (Year 2)","", "sAA reactivity (Year 2)","",
                            "SAM biomarkers (Year 2)","", "Glucocorticoid receptor","", "Anthropometry (14 months, Year 1)","","","",
