@@ -21,9 +21,10 @@ Wvars[!(Wvars %in% colnames(d))]
 
 #NOTES
 #Does monsoon_ut2 need to be replaced with monsoon_ht2 for growth measures? (and agemth_ut2 with agedays_ht2?)
-Wvars2<-c("monsoon_at2", "ageday_at2", "tr", "cesd_sum_t2") 
+Wvars2<-c("monsoon_at2", "ageday_at2", "tr", "cesd_sum_t2", "fever7d_t2", "ari7d_t2", "diar7d_t2", "nose7d_t2") 
 Wvars3<-c("lenhei_med_t2", "weight_med_t2", "monsoon_at2", "monsoon_at3", "ageday_at2", "ageday_at3", "tr",
-          "cesd_sum_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", "life_viol_any_t3") 
+          "cesd_sum_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", "life_viol_any_t3", "fever7d_t2", "fever7d_t3", 
+          "ari7d_t2", "ari7d_t3", "diar7d_t2", "diar7d_t3", "nose7d_t2", "nose7d_t3") 
 Wvars23<-c("anthro_days_btwn_t2_t3")
 
 W2_F2.W2_anthro <- c(Wvars, Wvars2) %>% unique(.)
