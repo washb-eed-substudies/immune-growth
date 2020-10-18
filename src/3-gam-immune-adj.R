@@ -81,7 +81,6 @@ for(i in 1:nrow(H1_adj_models)){
   preds <- predict_gam_diff(fit=H1_adj_models$fit[i][[1]], d=H1_adj_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H1_adj_res <-  bind_rows(H1_adj_res , preds$res)
 }
-H1_adj_res$adjusted <- 0
 
 #Make list of plots
 H1_adj_plot_list <- NULL
@@ -98,7 +97,7 @@ for(i in 1:nrow(H1_adj_models)){
 #saveRDS(H1_adj_models, paste0(dropboxDir,"results/stress-growth-models/models/H1_adj_models.RDS"))
 
 #Save results
-saveRDS(H1_adj_res, here("results/adjusted/H1_adj_res.RDS"))
+#saveRDS(H1_adj_res, here("results/adjusted/H1_adj_res.RDS"))
 
 
 #Save plots
@@ -135,7 +134,6 @@ for(i in 1:nrow(H2_adj_models)){
   preds <- predict_gam_diff(fit=H2_adj_models$fit[i][[1]], d=H2_adj_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H2_adj_res <-  bind_rows(H2_adj_res , preds$res)
 }
-H2_adj_res$adjusted <- 0
 
 #Make list of plots
 H2_plot_list <- NULL
@@ -152,7 +150,7 @@ for(i in 1:nrow(H2_adj_models)){
 #saveRDS(H2_adj_models, paste0(dropboxDir,"results/stress-growth-models/models/adj_H2_adj_models.RDS"))
 
 #Save results
-saveRDS(H2_adj_res, here("results/adjusted/H2_adj_res.RDS"))
+#saveRDS(H2_adj_res, here("results/adjusted/H2_adj_res.RDS"))
 
 
 #Save plots
@@ -186,7 +184,6 @@ for(i in 1:nrow(H3_adj_models)){
   preds <- predict_gam_diff(fit=H3_adj_models$fit[i][[1]], d=H3_adj_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H3_adj_res <-  bind_rows(H3_adj_res , preds$res)
 }
-H3_adj_res$adjusted <- 0
 
 #Make list of plots
 H3_plot_list <- NULL
@@ -203,7 +200,7 @@ for(i in 1:nrow(H3_adj_models)){
 #saveRDS(H3_adj_models, paste0(dropboxDir,"results/stress-growth-models/models/adj_H3_adj_models.RDS"))
 
 #Save results
-saveRDS(H3_adj_res, here("results/adjusted/H3_adj_res.RDS"))
+#saveRDS(H3_adj_res, here("results/adjusted/H3_adj_res.RDS"))
 
 
 #Save plots
@@ -238,7 +235,6 @@ for(i in 1:nrow(delta_growth_adj_models)){
   preds <- predict_gam_diff(fit=delta_growth_adj_models$fit[i][[1]], d=delta_growth_adj_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   delta_growth_adj_res <-  bind_rows(delta_growth_adj_res , preds$res)
 }
-delta_growth_adj_res$adjusted <- 0
 
 #Make list of plots
 delta_growth_adj_plot_list <- NULL
@@ -255,7 +251,7 @@ for(i in 1:nrow(delta_growth_adj_models)){
 #saveRDS(delta_growth_adj_models, paste0(dropboxDir,"results/stress-growth-models/models/adj_delta_growth_adj_models.RDS"))
 
 #Save results
-saveRDS(delta_growth_adj_res, here("results/adjusted/delta_growth_adj_res.RDS"))
+#saveRDS(delta_growth_adj_res, here("results/adjusted/delta_growth_adj_res.RDS"))
 
 
 #Save plots
@@ -263,3 +259,19 @@ saveRDS(delta_growth_adj_res, here("results/adjusted/delta_growth_adj_res.RDS"))
 
 #Save plot data
 saveRDS(delta_growth_adj_plot_data, here("figure-data/H4_adj_spline_data.RDS"))
+
+
+# Adjust Pvalues with Benjamini-Hochberg procedure
+full_res <- rbind(H1_adj_res, H2_adj_res, H3_adj_res, delta_growth_adj_res)
+full_res$corrected.Pval <- p.adjust(full_res[['Pval']], method="BH")
+
+H1_corr_res<-full_res[1:nrow(H1_adj_res),]
+H2_corr_res<-full_res[(nrow(H1_adj_res)+1):(nrow(H1_adj_res)+nrow(H2_adj_res)),]
+H3_corr_res<-full_res[(nrow(H1_adj_res)+nrow(H2_adj_res)+1):(nrow(H1_adj_res)+nrow(H2_adj_res)+nrow(H3_adj_res)),]
+delta_growth_corr_res<-full_res[(nrow(full_res)-nrow(delta_growth_adj_res)+1):nrow(full_res),]
+
+#Save results
+saveRDS(H1_corr_res, here("results/adjusted/H1_adj_res.RDS"))
+saveRDS(H2_corr_res, here("results/adjusted/H2_adj_res.RDS"))
+saveRDS(H3_corr_res, here("results/adjusted/H3_adj_res.RDS"))
+saveRDS(delta_growth_corr_res, here("results/adjusted/delta_growth_adj_res.RDS"))
