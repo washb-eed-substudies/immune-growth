@@ -91,7 +91,7 @@ saveRDS(H1_res, here("results/unadjusted/H1_res.RDS"))
 #saveRDS(H1_plot_list, here("figure-objects/H1_unadj_splines.RDS"))
 
 #Save plot data
-#saveRDS(H1_plot_data, here("figure-data/H1_unadj_spline_data.RDS"))
+saveRDS(H1_plot_data, here("figure-data/H1_unadj_spline_data.RDS"))
 
 
 
@@ -142,7 +142,7 @@ saveRDS(H2_res, here("results/unadjusted/H2_res.RDS"))
 #saveRDS(H2_plot_list, here("figure-objects/H2_unadj_splines.RDS"))
 
 #Save plot data
-#saveRDS(H2_plot_data, here("figure-data/H2_unadj_spline_data.RDS"))
+saveRDS(H2_plot_data, here("figure-data/H2_unadj_spline_data.RDS"))
 
 
 
@@ -193,7 +193,7 @@ saveRDS(H3_res, here("results/unadjusted/H3_res.RDS"))
 #saveRDS(H3_plot_list, here("figure-objects/H3_unadj_splines.RDS"))
 
 #Save plot data
-#saveRDS(H3_plot_data, here("figure-data/H3_unadj_spline_data.RDS"))
+saveRDS(H3_plot_data, here("figure-data/H3_unadj_spline_data.RDS"))
 
 
 #### Hypothesis ####
@@ -243,5 +243,5 @@ saveRDS(delta_growth_res, here("results/unadjusted/delta_growth_res.RDS"))
 #saveRDS(delta_growth_plot_list, here("figure-objects/delta_growth_unadj_splines.RDS"))
 
 #Save plot data
-#saveRDS(delta_growth_plot_data, here("figure-data/delta_growth_unadj_spline_data.RDS"))
+saveRDS(delta_growth_plot_data, here("figure-data/delta_growth_unadj_spline_data.RDS"))
 
