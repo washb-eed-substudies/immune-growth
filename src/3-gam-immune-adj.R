@@ -258,7 +258,7 @@ for(i in 1:nrow(delta_growth_adj_models)){
 #saveRDS(delta_growth_adj_plot_list, paste0(dropboxDir,"results/stress-growth-models/figure-objects/delta_growth_adj_adj_splines.RDS"))
 
 #Save plot data
-saveRDS(delta_growth_adj_plot_data, here("figure-data/H4_adj_spline_data.RDS"))
+saveRDS(delta_growth_adj_plot_data, here("figure-data/delta_growth_adj_spline_data.RDS"))
 
 
 # Adjust Pvalues with Benjamini-Hochberg procedure
