@@ -1,0 +1,462 @@
+---
+title: "Immune status and growth tables"
+output: 
+  html_document: 
+    fig_width: 8
+    toc_depth: 7
+---
+
+```{r include=FALSE}
+library(kableExtra)
+library(tidyverse)
+library(here)
+
+#import tables
+table1 <- readRDS(here("results/unadjusted/H1_res.RDS"))
+table1.adj <- readRDS(here("results/adjusted/H1_adj_res.RDS"))
+table1.adj.nofever <- readRDS(here("results/adjusted/H1_adj_nofever_res.RDS"))
+
+table2 <- readRDS(here("results/unadjusted/H2_res.RDS"))
+table2.adj <- readRDS(here("results/adjusted/H2_adj_res.RDS"))
+table2.adj.nofever <- readRDS(here("results/adjusted/H2_adj_nofever_res.RDS"))
+
+table3 <- readRDS(here("results/unadjusted/H3_res.RDS"))
+table3.adj <- readRDS(here("results/adjusted/H3_adj_res.RDS"))
+table3.adj.nofever <- readRDS(here("results/adjusted/H3_adj_nofever_res.RDS"))
+
+table4 <- readRDS(here("results/unadjusted/delta_growth_res.RDS"))
+table4.adj <- readRDS(here("results/adjusted/delta_growth_adj_res.RDS"))
+table4.adj.nofever <- readRDS(here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
+```
+
+```{r echo=FALSE}
+t1 <- data.frame(year = c(rep(1, 40), rep(2, 32)),  
+                 measurement = rep(c("LAZ", "WAZ", "WLZ", "HCZ"), 18),
+                 ratio = c(rep("Pro/IL-10", 4),
+                           rep("IL-2/IL-10", 4),
+                           rep("GM-CSF/IL-10", 4),
+                           rep("Th1/IL-10", 4),
+                           rep("Th2/IL-10", 4),
+                           rep("Th17/IL-10", 4),
+                           rep("Th1/Th2", 4),
+                           rep("Th1/Th17", 4),
+                           rep("AGP", 4),
+                           rep("CRP", 4),
+                           rep("Pro/IL-10", 4),
+                           rep("IL-2/IL-10", 4),
+                           rep("GM-CSF/IL-10", 4),
+                           rep("Th1/IL-10", 4),
+                           rep("Th2/IL-10", 4),
+                           rep("Th17/IL-10", 4),
+                           rep("Th1/Th2", 4),
+                           rep("Th1/Th17", 4)),
+                 q1.exp = round(table1$q1, 3),
+                 q3.exp = round(table1$q3, 3),
+                 q1.out = round(table1$pred.q1, 3),
+                 q3.out = round(table1$pred.q3, 3),
+                 unadj.diff = paste(round(table1$point.diff, 3), " (", 
+                                    round(table1$lb.diff, 3), ", ",
+                                    round(table1$ub.diff, 3), ")", sep = ""),
+                 q1.out2 = round(table1.adj$pred.q1, 3),
+                 q3.out2 = round(table1.adj$pred.q3, 3),
+                 adj.diff.nofever = paste(round(table1.adj.nofever$point.diff, 3), " (", 
+                                    round(table1.adj.nofever$lb.diff, 3), ", ",
+                                    round(table1.adj.nofever$ub.diff, 3), ")", sep = ""),
+                 adj.diff = paste(round(table1.adj$point.diff, 3), " (", 
+                                    round(table1.adj$lb.diff, 3), ", ",
+                                    round(table1.adj$ub.diff, 3), ")", sep = ""),
+                 p.value = round(table1.adj$Pval, 3))
+
+LAZ.t1 <- t1 %>%
+  dplyr::filter(measurement == "LAZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,year,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever, adj.diff,p.value)
+
+WAZ.t1 <- t1 %>%
+  dplyr::filter(measurement == "WAZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,year,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever, adj.diff,p.value)
+
+WLZ.t1 <- t1 %>%
+  dplyr::filter(measurement == "WLZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,year,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever, adj.diff,p.value)
+
+HCZ.t1 <- t1 %>%
+  dplyr::filter(measurement == "HCZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,year,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever, adj.diff,p.value)
+
+```
+
+```{r echo=FALSE}
+t2 <- data.frame(measurement = rep(c("LAZ", "WAZ", "WLZ", "HCZ"), 10),
+                 ratio = c(rep("Pro/IL-10", 4),
+                           rep("IL-2/IL-10", 4),
+                           rep("GM-CSF/IL-10", 4),
+                           rep("Th1/IL-10", 4),
+                           rep("Th2/IL-10", 4),
+                           rep("Th17/IL-10", 4),
+                           rep("Th1/Th2", 4),
+                           rep("Th1/Th17", 4),
+                           rep("AGP", 4),
+                           rep("CRP", 4)),
+                 q1.exp = round(table2$q1, 3),
+                 q3.exp = round(table2$q3, 3),
+                 q1.out = round(table2$pred.q1, 3),
+                 q3.out = round(table2$pred.q3, 3),
+                 unadj.diff = paste(round(table2$point.diff, 3), " (", 
+                                    round(table2$lb.diff, 3), ", ",
+                                    round(table2$ub.diff, 3), ")", sep = ""),
+                 q1.out2 = round(table2.adj$pred.q1, 3),
+                 q3.out2 = round(table2.adj$pred.q3, 3),
+                 adj.diff.nofever = paste(round(table2.adj.nofever$point.diff, 3), " (", 
+                                    round(table2.adj.nofever$lb.diff, 3), ", ",
+                                    round(table2.adj.nofever$ub.diff, 3), ")", sep = ""),
+                 adj.diff = paste(round(table2.adj$point.diff, 3), " (", 
+                                    round(table2.adj$lb.diff, 3), ", ",
+                                    round(table2.adj$ub.diff, 3), ")", sep = ""),
+                 p.value = round(table2.adj$Pval, 3))
+
+LAZ.t2 <- t2 %>%
+  dplyr::filter(measurement == "LAZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+WAZ.t2 <- t2 %>%
+  dplyr::filter(measurement == "WAZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+WLZ.t2 <- t2 %>%
+  dplyr::filter(measurement == "WLZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+HCZ.t2 <- t2 %>%
+  dplyr::filter(measurement == "HCZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+```
+
+
+```{r echo=FALSE}
+t3 <- data.frame(measurement = rep(c("Length velocity", "Weight velocity", 
+                                     "Head circumference velocity"), 10),
+                 ratio = c(rep("Pro/IL-10", 3),
+                           rep("IL-2/IL-10", 3),
+                           rep("GM-CSF/IL-10", 3),
+                           rep("Th1/IL-10", 3),
+                           rep("Th2/IL-10", 3),
+                           rep("Th17/IL-10", 3),
+                           rep("Th1/Th2", 3),
+                           rep("Th1/Th17", 3),
+                           rep("AGP", 3),
+                           rep("CRP", 3)),
+                 q1.exp = round(table3$q1, 3),
+                 q3.exp = round(table3$q3, 3),
+                 q1.out = round(table3$pred.q1, 3),
+                 q3.out = round(table3$pred.q3, 3),
+                 unadj.diff = paste(round(table3$point.diff, 3), " (", 
+                                    round(table3$lb.diff, 3), ", ",
+                                    round(table3$ub.diff, 3), ")", sep = ""),
+                 q1.out2 = round(table3.adj$pred.q1, 3),
+                 q3.out2 = round(table3.adj$pred.q3, 3),
+                 adj.diff.nofever = paste(round(table3.adj.nofever$point.diff, 3), " (", 
+                                    round(table3.adj.nofever$lb.diff, 3), ", ",
+                                    round(table3.adj.nofever$ub.diff, 3), ")", sep = ""),
+                 adj.diff = paste(round(table3.adj$point.diff, 3), " (", 
+                                    round(table3.adj$lb.diff, 3), ", ",
+                                    round(table3.adj$ub.diff, 3), ")", sep = ""),
+                 p.value = round(table3.adj$Pval, 3))
+
+length.t3 <- t3 %>%
+  dplyr::filter(measurement == "Length velocity") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+weight.t3 <- t3 %>%
+  dplyr::filter(measurement == "Weight velocity") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+hc.t3 <- t3 %>%
+  dplyr::filter(measurement == "Head circumference velocity") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+```
+
+
+```{r echo=FALSE}
+t4 <- data.frame(measurement = rep(c("dLAZ", "dWAZ", "dWLZ", "dHCZ"), 10),
+                 ratio = c(rep("Pro/IL-10", 4),
+                           rep("IL-2/IL-10", 4),
+                           rep("GM-CSF/IL-10", 4),
+                           rep("Th1/IL-10", 4),
+                           rep("Th2/IL-10", 4),
+                           rep("Th17/IL-10", 4),
+                           rep("Th1/Th2", 4),
+                           rep("Th1/Th17", 4),
+                           rep("AGP", 4),
+                           rep("CRP", 4)),
+                 q1.exp = round(table4$q1, 3),
+                 q3.exp = round(table4$q3, 3),
+                 q1.out = round(table4$pred.q1, 3),
+                 q3.out = round(table4$pred.q3, 3),
+                 unadj.diff = paste(round(table4$point.diff, 3), " (", 
+                                    round(table4$lb.diff, 3), ", ",
+                                    round(table4$ub.diff, 3), ")", sep = ""),
+                 q1.out2 = round(table4.adj$pred.q1, 3),
+                 q3.out2 = round(table4.adj$pred.q3, 3),
+                 adj.diff.nofever = paste(round(table4.adj.nofever$point.diff, 3), " (", 
+                                    round(table4.adj.nofever$lb.diff, 3), ", ",
+                                    round(table4.adj.nofever$ub.diff, 3), ")", sep = ""),
+                 adj.diff = paste(round(table4.adj$point.diff, 3), " (", 
+                                    round(table4.adj$lb.diff, 3), ", ",
+                                    round(table4.adj$ub.diff, 3), ")", sep = ""),
+                 p.value = round(table4.adj$Pval, 3))
+
+LAZ.t4 <- t4 %>%
+  dplyr::filter(measurement == "dLAZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+WAZ.t4 <- t4 %>%
+  dplyr::filter(measurement == "dWAZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+WLZ.t4 <- t4 %>%
+  dplyr::filter(measurement == "dWLZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+
+HCZ.t4 <- t4 %>%
+  dplyr::filter(measurement == "dHCZ") %>%
+  dplyr::arrange(ratio) %>%
+  dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
+                q1.out2,q3.out2,adj.diff.nofever,adj.diff,p.value)
+```
+
+## LAZ
+```{r echo=FALSE}
+kable(LAZ.t1,
+  align = 'lcccccccccc',
+  caption = "Concurrent LAZ",
+  col.names = c("Ratio", "Year",
+                "Ratio value for Q1 LAZ (log pg/ml)",
+                "Ratio value for Q3 LAZ (log pg/ml)", 
+                "Unadjus. pred. Q1 LAZ", "Unadjus. pred. Q3 LAZ",
+                "Unadj. mean diff. in LAZ (95% CI)", 
+                "Adjus. pred. Q1 LAZ", "Adjus. pred. Q3 LAZ",
+                "Adj. mean diff. in LAZ (95% CI) (no fever)", 
+                "Adj. mean diff. in LAZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(LAZ.t2,
+  align = 'lcccccccccc',
+  caption = "Subsequent LAZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 LAZ (log pg/ml)",
+                "Ratio value for Q3 LAZ (log pg/ml)", 
+                "Unadjus. pred. Q1 LAZ", "Unadjus. pred. Q3 LAZ",
+                "Unadj. mean diff. in LAZ (95% CI)", 
+                "Adjus. pred. Q1 LAZ", "Adjus. pred. Q3 LAZ",
+                "Adj. mean diff. in LAZ (95% CI) (no fever)", 
+                "Adj. mean diff. in LAZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(length.t3,
+  align = 'lcccccccccc',
+  caption = "Length velocity",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 length velocity (log pg/ml)",
+                "Ratio value for Q3 length velocity (log pg/ml)", 
+                "Unadj. pred. Q1 velocity", "Unadj. pred. Q3 velocity", 
+                "Unadj. mean diff. in length velocity [cm/month] (95% CI)", 
+                "Unadj. pred. Q1 velocity", "Unadj. pred. Q3 velocity",
+                "Adj. mean diff. in length velocity [cm/month] (95% CI) (no fever)", 
+                "Adj. mean diff. in length velocity [cm/month] (95% CI)","p-value"),
+  booktabs = TRUE)
+
+kable(LAZ.t4,
+  align = 'lcccccccccc',
+  caption = "Change in LAZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 LAZ change (log pg/ml)",
+                "Ratio value for Q3 LAZ change (log pg/ml)", 
+                "Unadjus. pred. Q1 LAZ change", "Unadjus. pred. Q3 LAZ change",
+                "Unadj. mean diff. in LAZ change (95% CI)", 
+                "Adjus. pred. Q1 LAZ change", "Adjus. pred. Q3 LAZ change",
+                "Adj. mean diff. in LAZ (95% CI) (no fever)", 
+                "Adj. mean diff. in LAZ change (95% CI)", "p-value"),
+  booktabs = TRUE)
+```
+
+## WAZ
+```{r echo=FALSE}
+kable(WAZ.t1,
+  align = 'lcccccccccc',
+  caption = "Concurrent WAZ",
+  col.names = c("Ratio", "Year",
+                "Ratio value for Q1 WAZ (log pg/ml)",
+                "Ratio value for Q3 WAZ (log pg/ml)", 
+                "Unadjus. pred. Q1 WAZ", "Unadjus. pred. Q3 WAZ",
+                "Unadj. mean diff. in WAZ (95% CI)", 
+                "Adjus. pred. Q1 WAZ", "Adjus. pred. Q3 WAZ",
+                "Adj. mean diff. in WAZ (95% CI) (no fever)", 
+                "Adj. mean diff. in WAZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(WAZ.t2,
+  align = 'lcccccccccc',
+  caption = "Subsequent WAZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 WAZ (log pg/ml)",
+                "Ratio value for Q3 WAZ (log pg/ml)", 
+                "Unadjus. pred. Q1 WAZ", "Unadjus. pred. Q3 WAZ",
+                "Unadj. mean diff. in WAZ (95% CI)", 
+                "Adjus. pred. Q1 WAZ", "Adjus. pred. Q3 WAZ",
+                "Adj. mean diff. in WAZ (95% CI) (no fever)", 
+                "Adj. mean diff. in WAZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(length.t3,
+  align = 'lcccccccccc',
+  caption = "Weight velocity",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 weight velocity (log pg/ml)",
+                "Ratio value for Q3 weight velocity (log pg/ml)", 
+                "Unadj. pred. Q1 velocity", "Unadj. pred. Q3 velocity", 
+                "Unadj. mean diff. in weight velocity [cm/month] (95% CI)", 
+                "Unadj. pred. Q1 velocity", "Unadj. pred. Q3 velocity",
+                "Adj. mean diff. in weight velocity [cm/month] (95% CI) (no fever)",
+                "Adj. mean diff. in weight velocity [cm/month] (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(WAZ.t4,
+  align = 'lcccccccccc',
+  caption = "Change in WAZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 WAZ change (log pg/ml)",
+                "Ratio value for Q3 WAZ change (log pg/ml)", 
+                "Unadjus. pred. Q1 WAZ change", "Unadjus. pred. Q3 WAZ change",
+                "Unadj. mean diff. in WAZ change (95% CI)", 
+                "Adjus. pred. Q1 WAZ change", "Adjus. pred. Q3 WAZ change",
+                "Adj. mean diff. in WAZ (95% CI) (no fever)", 
+                "Adj. mean diff. in WAZ change (95% CI)", "p-value"),
+  booktabs = TRUE)
+```
+
+## WLZ
+```{r echo=FALSE}
+kable(WLZ.t1,
+  align = 'lcccccccccc',
+  caption = "Concurrent WLZ",
+  col.names = c("Ratio", "Year",
+                "Ratio value for Q1 WLZ (log pg/ml)",
+                "Ratio value for Q3 WLZ (log pg/ml)", 
+                "Unadjus. pred. Q1 WLZ", "Unadjus. pred. Q3 WLZ",
+                "Unadj. mean diff. in WLZ (95% CI)", 
+                "Adjus. pred. Q1 WLZ", "Adjus. pred. Q3 WLZ",
+                "Adj. mean diff. in WLZ (95% CI) (no fever)",
+                "Adj. mean diff. in WLZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(WLZ.t2,
+  align = 'lcccccccccc',
+  caption = "Subsequent WLZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 WLZ (log pg/ml)",
+                "Ratio value for Q3 WLZ (log pg/ml)", 
+                "Unadjus. pred. Q1 WLZ", "Unadjus. pred. Q3 WLZ",
+                "Unadj. mean diff. in WLZ (95% CI)", 
+                "Adjus. pred. Q1 WLZ", "Adjus. pred. Q3 WLZ",
+                "Adj. mean diff. in WLZ (95% CI) (no fever)",
+                "Adj. mean diff. in WLZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(WLZ.t4,
+  align = 'lcccccccccc',
+  caption = "Change in WLZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 WLZ change (log pg/ml)",
+                "Ratio value for Q3 WLZ change (log pg/ml)", 
+                "Unadjus. pred. Q1 WLZ change", "Unadjus. pred. Q3 WLZ change",
+                "Unadj. mean diff. in WLZ change (95% CI)", 
+                "Adjus. pred. Q1 WLZ change", "Adjus. pred. Q3 WLZ change",
+                "Adj. mean diff. in WLZ (95% CI) (no fever)",
+                "Adj. mean diff. in WLZ change (95% CI)", "p-value"),
+  booktabs = TRUE)
+```
+
+## HCZ
+```{r echo=FALSE}
+kable(HCZ.t1,
+  align = 'lcccccccccc',
+  caption = "Concurrent HCZ",
+  col.names = c("Ratio", "Year",
+                "Ratio value for Q1 HCZ (log pg/ml)",
+                "Ratio value for Q3 HCZ (log pg/ml)", 
+                "Unadjus. pred. Q1 HCZ", "Unadjus. pred. Q3 HCZ",
+                "Unadj. mean diff. in HCZ (95% CI)", 
+                "Adjus. pred. Q1 HCZ", "Adjus. pred. Q3 HCZ",
+                "Adj. mean diff. in HCZ (95% CI) (no fever)",
+                "Adj. mean diff. in HCZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(HCZ.t2,
+  align = 'lcccccccccc',
+  caption = "Subsequent HCZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 HCZ (log pg/ml)",
+                "Ratio value for Q3 HCZ (log pg/ml)", 
+                "Unadjus. pred. Q1 HCZ", "Unadjus. pred. Q3 HCZ",
+                "Unadj. mean diff. in HCZ (95% CI)", 
+                "Adjus. pred. Q1 HCZ", "Adjus. pred. Q3 HCZ",
+                "Adj. mean diff. in HCZ (95% CI) (no fever)",
+                "Adj. mean diff. in HCZ (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(length.t3,
+  align = 'lcccccccccc',
+  caption = "Head circumference velocity",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 HC velocity (log pg/ml)",
+                "Ratio value for Q3 HC velocity (log pg/ml)", 
+                "Unadj. pred. Q1 velocity", "Unadj. pred. Q3 velocity", 
+                "Unadj. mean diff. in HC velocity [cm/month] (95% CI)", 
+                "Unadj. pred. Q1 velocity", "Unadj. pred. Q3 velocity",
+                "Adj. mean diff. in HC velocity [cm/month] (95% CI) (no fever)",
+                "Adj. mean diff. in HC velocity [cm/month] (95% CI)", "p-value"),
+  booktabs = TRUE)
+
+kable(HCZ.t4,
+  align = 'lcccccccccc',
+  caption = "Change in HCZ",
+  col.names = c("Ratio", 
+                "Ratio value for Q1 HCZ change (log pg/ml)",
+                "Ratio value for Q3 HCZ change (log pg/ml)", 
+                "Unadjus. pred. Q1 HCZ change", "Unadjus. pred. Q3 HCZ change",
+                "Unadj. mean diff. in HCZ change (95% CI)", 
+                "Adjus. pred. Q1 HCZ change", "Adjus. pred. Q3 HCZ change",
+                "Adj. mean diff. in HCZ (95% CI) (no fever)",
+                "Adj. mean diff. in HCZ change (95% CI)", "p-value"),
+  booktabs = TRUE)
+```
