@@ -35,7 +35,11 @@ y1_pca <- prcomp(y1_impute_scale)
 summary(y1_pca) #first PC accounts for 25.2% of variance
 
 #bind back to dataset
+<<<<<<< HEAD
 y1.pc.ids <- y1_pca$x[,c(1:10)]
+=======
+y1.pc.ids <- y1_pca$x 
+>>>>>>> 4c641c4a9cf1f450ed2720455eec61abb0e48a26
 colnames(y1.pc.ids) <- paste(colnames(y1.pc.ids), "y1", sep = "_")
 y1.pc.ids <- cbind(childid = y1_id, y1.pc.ids)
 
@@ -92,7 +96,11 @@ y2_pca <- prcomp(y2_impute_scale)
 summary(y2_pca) #first PC accounts for 26.5% of variance
 
 #bind back to dataset
+<<<<<<< HEAD
 y2.pc.ids <- y2_pca$x[,c(1:10)] 
+=======
+y2.pc.ids <- y2_pca$x 
+>>>>>>> 4c641c4a9cf1f450ed2720455eec61abb0e48a26
 colnames(y2.pc.ids) <- paste(colnames(y2.pc.ids), "y2", sep = "_")
 y2.pc.ids <- cbind(childid = y2_id, y2.pc.ids)
 
