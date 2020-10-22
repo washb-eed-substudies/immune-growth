@@ -7,13 +7,15 @@ library(corrplot)
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
 
 #select PCA variables
-y1_exposure <- select(d, grep("_t2", names(d), value=T))
-y1_exposure <- y1_exposure[,c(3:17)]
+y1_exposure <- select(d, childid, grep("_t2", names(d), value=T))
+y1_exposure <- y1_exposure[,c(1, 4:18)]
 
-#remove observations with all missing data
-y1_exposure <- y1_exposure[rowSums(is.na(y1_exposure)) != ncol(y1_exposure),]
-nrow(y1_exposure)
-summary(sapply(y1_exposure, is.na))
+#remove observations with all missing data except childid
+y1_exposure <- y1_exposure[rowSums(is.na(y1_exposure)) != ncol(y1_exposure)-1,]
+nrow(y1_exposure) #remaining obs
+summary(sapply(y1_exposure, is.na)) #check missingness
+y1_id <- y1_exposure[,1] #store ids
+y1_exposure <- y1_exposure[,-1] #remove ids
 
 #impute median
 y1_impute <- y1_exposure
@@ -30,12 +32,15 @@ y1_impute_scale <- scale(y1_impute, center = FALSE)
   
 #run pca
 y1_pca <- prcomp(y1_impute_scale)
-summary(y1_pca) #first PC accounts for 25% of variance
+summary(y1_pca) #first PC accounts for 25.2% of variance
 
-#save loadings as matrix
-y1_loadings <- as.matrix(y1_pca$rotation[,c(1:10)])
+#bind back to dataset
+y1.pc.ids <- y1_pca$x 
+colnames(y1.pc.ids) <- paste(colnames(y1.pc.ids), "y1", sep = "_")
+y1.pc.ids <- cbind(childid = y1_id, y1.pc.ids)
 
 #visualize
+y1_loadings <- as.matrix(y1_pca$rotation[,c(1:10)])
 y1_loadings_long <- as.data.frame(cbind(cytokine = rownames(y1_loadings), y1_loadings[,1:10]))
 y1_loadings_long <- pivot_longer(y1_loadings_long, cols = starts_with("PC"), 
                               names_to = "PC", values_to = "value")
@@ -57,15 +62,17 @@ y1.loadings.plot <- ggplot(data = y1_loadings_long) +
   scale_fill_viridis() +
   labs(legend = "Loading", y = "Cytokine", x = "Principal component")
 
-#### Year 2
+#----------Year 2-------------#
 #select PCA variables
-y2_exposure <- select(d, grep("_t3", names(d), value=T))
-y2_exposure <- y2_exposure[,c(3:15)]
+y2_exposure <- select(d, childid, grep("_t3", names(d), value=T))
+y2_exposure <- y2_exposure[,c(1, 4:16)]
 
-#remove observations with all missing data
-y2_exposure <- y2_exposure[rowSums(is.na(y2_exposure)) != ncol(y2_exposure),]
-nrow(y2_exposure)
-summary(sapply(y2_exposure, is.na))
+#remove observations with all missing data except childid
+y2_exposure <- y2_exposure[rowSums(is.na(y2_exposure)) != ncol(y2_exposure)-1,]
+nrow(y2_exposure) #remaining obs
+summary(sapply(y2_exposure, is.na)) #check missingness
+y2_id <- y2_exposure[,1] #store ids
+y2_exposure <- y2_exposure[,-1] #remove ids
 
 #impute median
 y2_impute <- y2_exposure
@@ -82,10 +89,15 @@ y2_impute_scale <- scale(y2_impute, center = FALSE)
 
 #run pca
 y2_pca <- prcomp(y2_impute_scale)
-summary(y2_pca)
-y2_loadings <- as.matrix(y2_pca$rotation[,c(1:10)])
+summary(y2_pca) #first PC accounts for 26.5% of variance
+
+#bind back to dataset
+y2.pc.ids <- y2_pca$x 
+colnames(y2.pc.ids) <- paste(colnames(y2.pc.ids), "y2", sep = "_")
+y2.pc.ids <- cbind(childid = y2_id, y2.pc.ids)
 
 #visualize 
+y2_loadings <- as.matrix(y2_pca$rotation[,c(1:10)])
 y2_loadings_long <- as.data.frame(cbind(cytokine = rownames(y2_loadings), y2_loadings[,1:10]))
 y2_loadings_long <- pivot_longer(y2_loadings_long, cols = starts_with("PC"), 
                               names_to = "PC", values_to = "value")
@@ -107,3 +119,5 @@ y2.loadings.plot <- ggplot(data = y2_loadings_long) +
   scale_fill_viridis() +
   labs(legend = "Loading", y = "Cytokine", x = "Principal component")
 
+pca.results <- merge(y1.pc.ids, y2.pc.ids, by = "childid")
+write.csv(pca.results, file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
