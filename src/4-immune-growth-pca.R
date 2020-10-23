@@ -13,9 +13,15 @@ y1_exposure <- y1_exposure[,c(1, 4:18)]
 #remove observations with all missing data except childid
 y1_exposure <- y1_exposure[rowSums(is.na(y1_exposure)) != ncol(y1_exposure)-1,]
 nrow(y1_exposure) #remaining obs
-sum(is.na(y1_exposure)) #check missingness
 y1_id <- y1_exposure[,1] #store ids
 y1_exposure <- y1_exposure[,-1] #remove ids
+
+#check missingness
+sum(is.na(y1_exposure)) #number total obs
+colSums(is.na(y1_exposure)) #number by cytokine
+missing <- y1_exposure %>% mutate(missing = rowSums(is.na(y1_exposure))) %>% select(missing)
+length(which(missing$missing >0)) #number of children with missing data
+mean(missing$missing[missing$missing >0]) #average missing per child
 
 #impute median
 y1_impute <- y1_exposure
@@ -53,18 +59,20 @@ y1_loadings_long$value <- as.numeric(y1_loadings_long$value)
 y1_loadings_long$PC <- factor(y1_loadings_long$PC, levels = c("PC1","PC2","PC3","PC4","PC5",
                                                         "PC6","PC7","PC8","PC9","PC10"))
 
-cytokine <- unique(y1_loadings_long$cytokine)
+cytokine.levels.y1 <- c("agp_t2", "crp_t2","il10_t2", "il21_t2", "il17_t2",  
+                     "il13_t2", "il5_t2","il4_t2","ifng_t2","il12_t2",
+                     "il2_t2", "gmcsf_t2","tnfa_t2", "il6_t2", "il1_t2")
 y1_loadings_long$cytokine <- factor(y1_loadings_long$cytokine, 
-                                 levels = cytokine,
-                                 labels = c("CRP", "AGP", "GMCSF", "IFN-g", "IL-10", "IL-12",
-                                            "IL-13", "IL-17", "IL-1", "IL-2", "IL-21", "IL-4",
-                                            "IL-5", "IL-6", "TNF-a"))
+                                 levels = cytokine.levels.y1,
+                                 labels = c("AGP","CRP","IL-10", "IL-21","IL-17",   
+                                            "IL-13", "IL-5","IL-4","IFNg","IL-12",
+                                            "IL-2","GMCSF","TNFa","IL-6","IL-1"))
 
 y1.loadings.plot <- ggplot(data = y1_loadings_long) + 
   geom_tile(aes(x = PC, y = cytokine, fill = value)) +
-  theme(legend.position = "right") +
-  scale_fill_viridis() +
-  labs(legend = "Loading", y = "Cytokine", x = "Principal component")
+  theme(legend.position = "right", axis.title.y = element_blank()) +
+  scale_fill_viridis(name = "Value") +
+  labs(x = "Principal component", subtitle = "Year 1 PCA loadings")
 
 #----------Year 2-------------#
 #select PCA variables
@@ -74,9 +82,15 @@ y2_exposure <- y2_exposure[,c(1, 4:16)]
 #remove observations with all missing data except childid
 y2_exposure <- y2_exposure[rowSums(is.na(y2_exposure)) != ncol(y2_exposure)-1,]
 nrow(y2_exposure) #remaining obs
-sum(is.na(y2_exposure)) #check missingness #check missingness
 y2_id <- y2_exposure[,1] #store ids
 y2_exposure <- y2_exposure[,-1] #remove ids
+
+#check missingness
+sum(is.na(y2_exposure)) #number total obs
+colSums(is.na(y2_exposure)) #number by cytokine
+missing <- y2_exposure %>% mutate(missing = rowSums(is.na(y2_exposure))) %>% select(missing)
+length(which(missing$missing >0)) #number of children with missing data
+mean(missing$missing[missing$missing >0]) #average missing per child
 
 #impute median
 y2_impute <- y2_exposure
@@ -113,18 +127,21 @@ y2_loadings_long$value <- as.numeric(y2_loadings_long$value)
 y2_loadings_long$PC <- factor(y2_loadings_long$PC, levels = c("PC1","PC2","PC3","PC4","PC5",
                                                         "PC6","PC7","PC8","PC9","PC10"))
 
-cytokine <- unique(y2_loadings_long$cytokine)
+cytokine.levels.y2 <- c("il10_t3", "il21_t3", "il17_t3",  
+                     "il13_t3", "il5_t3","il4_t3","ifng_t3","il12_t3",
+                     "il2_t3", "gmcsf_t3","tnfa_t3", "il6_t3", "il1_t3")
+
 y2_loadings_long$cytokine <- factor(y2_loadings_long$cytokine, 
-                                    levels = cytokine,
-                                    labels = c("GMCSF", "IFN-g", "IL-10", "IL-12",
-                                            "IL-13", "IL-17", "IL-1", "IL-2", "IL-21", "IL-4",
-                                            "IL-5", "IL-6", "TNF-a"))
+                                    levels = cytokine.levels.y2,
+                                    labels = c("IL-10", "IL-21","IL-17",   
+                                               "IL-13", "IL-5","IL-4","IFNg","IL-12",
+                                               "IL-2","GMCSF","TNFa","IL-6","IL-1"))
 
 y2.loadings.plot <- ggplot(data = y2_loadings_long) + 
   geom_tile(aes(x = PC, y = cytokine, fill = value)) +
-  theme(legend.position = "right") +
-  scale_fill_viridis() +
-  labs(legend = "Loading", y = "Cytokine", x = "Principal component")
+  theme(legend.position = "right", axis.title.y = element_blank()) +
+  scale_fill_viridis(name = "Value") +
+  labs(x = "Principal component", subtitle = "Year 2 PCA loadings")
 
 pca.results <- merge(y1.pc.ids, y2.pc.ids, by = "childid")
 
@@ -139,7 +156,8 @@ long$PC <- factor(long$PC, levels = c("PC1_y1","PC2_y1","PC3_y1","PC4_y1","PC5_y
 y1.density.plots <- ggplot(data = long) +
   geom_density(aes(x = value))+
   facet_wrap(~PC)+
-  xlim(-2.5,2.5)
+  xlim(-2.5,2.5)+
+  ylim(0, 3)
 
 #y2
 long <- pivot_longer(as.data.frame(y2.pc.ids), cols = starts_with("PC"), 
@@ -151,6 +169,7 @@ long$PC <- factor(long$PC, levels = c("PC1_y2","PC2_y2","PC3_y2","PC4_y2","PC5_y
 y2.density.plots <- ggplot(data = long) +
   geom_density(aes(x = value))+
   facet_wrap(~PC)+
-  xlim(-2.5,2.5)
+  xlim(-2.5,2.5)+
+  ylim(0, 3)
 
 #write.csv(pca.results, file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
