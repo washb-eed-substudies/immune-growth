@@ -8,10 +8,7 @@ d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-ana
 #Set list of adjustment variables
 #Make vectors of adjustment variable names
 Wvars<-c("sex","birthord", "momage","momheight","momedu", 
-         "hfiacat", "Nlt18","Ncomp", "watmin", "walls", "floor", "roof", "elec", "asset_wardrobe",
-         "asset_table", "asset_chair", "asset_clock","asset_khat", "asset_chouki", 
-         "asset_radio", "asset_tv", "asset_refrig", "asset_bike", "asset_moto", "asset_sewmach", 
-         "asset_mobile", "n_cattle", "n_goat", "n_chicken")
+         "hfiacat", "Nlt18","Ncomp", "watmin", "walls", "floor", "roof", "HHwealth_quart", "n_cattle", "n_goat", "n_chicken")
 
 Wvars[!(Wvars %in% colnames(d))]
 
