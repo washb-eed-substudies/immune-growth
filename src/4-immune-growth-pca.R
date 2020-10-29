@@ -2,6 +2,7 @@ rm(list=ls())
 source(here::here("0-config.R"))
 library(viridis)
 library(corrplot)
+library(reshape2)
 
 #read in data
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
@@ -15,6 +16,29 @@ y1_exposure <- y1_exposure[rowSums(is.na(y1_exposure)) != ncol(y1_exposure)-1,]
 nrow(y1_exposure) #remaining obs
 y1_id <- y1_exposure[,1] #store ids
 y1_exposure <- y1_exposure[,-1] #remove ids
+
+#check correlation prior to imputation
+cormat <- round(cor(y1_exposure, use="pairwise.complete.obs"),2)
+
+#plot correlation
+get_upper_tri <- function(cormat){   #define function for removing lower triangle
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+
+upper_tri <- get_upper_tri(cormat)
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+y1.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "green", high = "purple", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1),
+        axis.title = element_blank())+
+  coord_fixed()
 
 #check missingness
 sum(is.na(y1_exposure)) #number total obs
@@ -84,6 +108,24 @@ y2_exposure <- y2_exposure[rowSums(is.na(y2_exposure)) != ncol(y2_exposure)-1,]
 nrow(y2_exposure) #remaining obs
 y2_id <- y2_exposure[,1] #store ids
 y2_exposure <- y2_exposure[,-1] #remove ids
+
+#check correlation prior to imputation
+cormat <- round(cor(y2_exposure, use="pairwise.complete.obs"),2)
+
+#plot correlation
+upper_tri <- get_upper_tri(cormat)
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+y2.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "green", high = "purple", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1),
+        axis.title = element_blank())+
+  coord_fixed()
 
 #check missingness
 sum(is.na(y2_exposure)) #number total obs
