@@ -2,6 +2,7 @@ rm(list=ls())
 source(here::here("0-config.R"))
 library(viridis)
 library(corrplot)
+library(reshape2)
 
 #read in data
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
@@ -15,6 +16,29 @@ y1_exposure <- y1_exposure[rowSums(is.na(y1_exposure)) != ncol(y1_exposure)-1,]
 nrow(y1_exposure) #remaining obs
 y1_id <- y1_exposure[,1] #store ids
 y1_exposure <- y1_exposure[,-1] #remove ids
+
+#check correlation prior to imputation
+cormat <- round(cor(y1_exposure, use="pairwise.complete.obs"),2)
+
+#plot correlation
+get_upper_tri <- function(cormat){   #define function for removing lower triangle
+  cormat[lower.tri(cormat)]<- NA
+  return(cormat)
+}
+
+upper_tri <- get_upper_tri(cormat)
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+y1.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "green", high = "purple", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1),
+        axis.title = element_blank())+
+  coord_fixed()
 
 #check missingness
 sum(is.na(y1_exposure)) #number total obs
@@ -39,7 +63,6 @@ y1_impute_scale <- scale(y1_impute, center = FALSE)
 #run pca
 y1_pca <- prcomp(y1_impute_scale)
 summary(y1_pca) #first PC accounts for 25.2% of variance
-screeplot(y1_pca, npcs = 10, type = "lines")
 #diagnostic plots
 screeplot(y1_pca, npcs = 10, type = "lines")
 biplot(y1_pca)
@@ -84,6 +107,24 @@ y2_exposure <- y2_exposure[rowSums(is.na(y2_exposure)) != ncol(y2_exposure)-1,]
 nrow(y2_exposure) #remaining obs
 y2_id <- y2_exposure[,1] #store ids
 y2_exposure <- y2_exposure[,-1] #remove ids
+
+#check correlation prior to imputation
+cormat <- round(cor(y2_exposure, use="pairwise.complete.obs"),2)
+
+#plot correlation
+upper_tri <- get_upper_tri(cormat)
+melted_cormat <- melt(upper_tri, na.rm = TRUE)
+
+y2.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "green", high = "purple", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1),
+        axis.title = element_blank())+
+  coord_fixed()
 
 #check missingness
 sum(is.na(y2_exposure)) #number total obs
@@ -143,9 +184,7 @@ y2.loadings.plot <- ggplot(data = y2_loadings_long) +
   scale_fill_viridis(name = "Value") +
   labs(x = "Principal component", subtitle = "Year 2 PCA loadings")
 
-pca.results <- merge(y1.pc.ids, y2.pc.ids, by = "childid")
-
-#density plots
+#density plots of distribution of principal components
 #y1
 long <- pivot_longer(as.data.frame(y1.pc.ids), cols = starts_with("PC"), 
                      names_to = "PC", values_to = "value")
@@ -172,4 +211,51 @@ y2.density.plots <- ggplot(data = long) +
   xlim(-2.5,2.5)+
   ylim(0, 3)
 
+#export results
+pca.results <- merge(y1.pc.ids, y2.pc.ids, by = "childid")
 #write.csv(pca.results, file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
+
+####### sensitivity analysis - PCA with complete cases
+#year 1
+y1.complete <- y1_exposure[complete.cases(y1_exposure),]
+nrow(y1.complete)
+
+#scale and perform PCA
+y1.complete_scale <- scale(y1.complete, center = FALSE)
+y1.complete.pca <- prcomp(y1.complete_scale)
+y1.complete.loadings <- as.matrix(y1.complete.pca$rotation[,c(1:10)])
+
+loadings.diff.y1 = y1.complete.loadings - y1_loadings
+melted <- melt(loadings.diff.y1)
+
+loaddiff.plot.y1 <- ggplot(data = melted, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Difference") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 10, hjust = 1),
+        axis.title = element_blank())
+
+### year 2
+y2.complete <- y2_exposure[complete.cases(y2_exposure),]
+nrow(y2.complete)
+
+#scale and perform PCA
+y2.complete_scale <- scale(y2.complete, center = FALSE)
+y2.complete.pca <- prcomp(y2.complete_scale)
+y2.complete.loadings <- as.matrix(y2.complete.pca$rotation[,c(1:10)])
+
+loadings.diff.y2 = y2.complete.loadings - y2_loadings
+melted <- melt(loadings.diff.y2)
+
+loaddiff.plot.y2 <- ggplot(data = melted, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Difference") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 10, hjust = 1),
+        axis.title = element_blank())
