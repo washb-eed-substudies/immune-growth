@@ -3,6 +3,8 @@ source(here::here("0-config.R"))
 library(viridis)
 library(corrplot)
 library(reshape2)
+library(caret)
+library(RANN)
 
 #read in data
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
@@ -15,23 +17,17 @@ y1_exposure <- y1_exposure[,c(1, 4:18)]
 y1_exposure <- y1_exposure[rowSums(is.na(y1_exposure)) != ncol(y1_exposure)-1,]
 nrow(y1_exposure) #remaining obs
 y1_id <- y1_exposure[,1] #store ids
-y1_exposure <- y1_exposure[,-1] #remove ids
+y1_exposure <- y1_exposure[,-1] #remove ids from PCA dataset
 
 #check correlation prior to imputation
 cormat <- round(cor(y1_exposure, use="pairwise.complete.obs"),2)
 
 #plot correlation
-get_upper_tri <- function(cormat){   #define function for removing lower triangle
-  cormat[lower.tri(cormat)]<- NA
-  return(cormat)
-}
-
-upper_tri <- get_upper_tri(cormat)
-melted_cormat <- melt(upper_tri, na.rm = TRUE)
-
+cormat[lower.tri(cormat)]<- NA
+melted_cormat <- melt(cormat, na.rm = TRUE)
 y1.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
   geom_tile(color = "white")+
-  scale_fill_gradient2(low = "green", high = "purple", mid = "white", 
+  scale_fill_gradient2(low = "red", high = "green", mid = "white", 
                        midpoint = 0, limit = c(-1,1), space = "Lab", 
                        name="Pearson\nCorrelation") +
   theme_minimal()+ 
@@ -39,6 +35,7 @@ y1.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
                                    size = 12, hjust = 1),
         axis.title = element_blank())+
   coord_fixed()
+  #all positively correlated
 
 #check missingness
 sum(is.na(y1_exposure)) #number total obs
@@ -47,30 +44,36 @@ missing <- y1_exposure %>% mutate(missing = rowSums(is.na(y1_exposure))) %>% sel
 length(which(missing$missing >0)) #number of children with missing data
 mean(missing$missing[missing$missing >0]) #average missing per child
 
-#impute median
-y1_impute <- y1_exposure
-for(i in 1:ncol(y1_impute)){
-  y1_impute[is.na(y1_impute[,i]), i] <- median(y1_impute[,i], na.rm = TRUE)
-}
-
-#check correlations
-corrplot(cor(y1_impute), method="ellipse") 
-#all positively correlated, would have preferred some negative correlation
+#impute using kNN
+set.seed(12345)
+missing.model = preProcess(y1_exposure, "knnImpute")
+y1_impute = predict(missing.model, y1_exposure); sum(is.na(y1_impute))
 
 #scale
 y1_impute_scale <- scale(y1_impute, center = FALSE)
   
 #run pca
 y1_pca <- prcomp(y1_impute_scale)
-summary(y1_pca) #first PC accounts for 25.2% of variance
+summary(y1_pca) 
 #diagnostic plots
 screeplot(y1_pca, npcs = 10, type = "lines")
 biplot(y1_pca)
 
-#bind back to dataset
-y1.pc.ids <- y1_pca$x[,c(1:10)]
-colnames(y1.pc.ids) <- paste(colnames(y1.pc.ids), "y1", sep = "_")
-y1.pc.ids <- cbind(childid = y1_id, y1.pc.ids)
+#bind back to ids
+pred <- predict(y1_pca, newdata=y1_impute)
+colnames(pred) <- paste(colnames(pred), "y1", sep = "_")
+colnames(y1_impute) <- paste(colnames(y1_impute), "imp", sep = "_")
+colnames(y1_impute_scale) <- paste(colnames(as.data.frame(y1_impute_scale)), "imp_scale", sep = "_")
+y1.pc.ids <- as.data.frame(cbind(childid = y1_id, y1_impute, y1_impute_scale, pred[,1:10]))
+
+#create sum score
+y1.pc.ids$sumscore_y1 <- rowSums(y1.pc.ids[,c(17:31)])
+#plot PC1 vs sum score
+ggplot(data = y1.pc.ids, aes(x = sumscore, y = PC1_y1)) +
+  geom_point()+
+  labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)") +
+  ylim(-5,20) +
+  xlim(-15,43)
 
 #visualize
 y1_loadings <- as.matrix(y1_pca$rotation[,c(1:10)])
@@ -106,18 +109,17 @@ y2_exposure <- y2_exposure[,c(1, 4:16)]
 y2_exposure <- y2_exposure[rowSums(is.na(y2_exposure)) != ncol(y2_exposure)-1,]
 nrow(y2_exposure) #remaining obs
 y2_id <- y2_exposure[,1] #store ids
-y2_exposure <- y2_exposure[,-1] #remove ids
+y2_exposure <- y2_exposure[,-1] #remove ids from PCA dataset
 
 #check correlation prior to imputation
 cormat <- round(cor(y2_exposure, use="pairwise.complete.obs"),2)
 
 #plot correlation
-upper_tri <- get_upper_tri(cormat)
-melted_cormat <- melt(upper_tri, na.rm = TRUE)
-
+cormat[lower.tri(cormat)]<- NA
+melted_cormat <- melt(cormat, na.rm = TRUE)
 y2.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
   geom_tile(color = "white")+
-  scale_fill_gradient2(low = "green", high = "purple", mid = "white", 
+  scale_fill_gradient2(low = "red", high = "green", mid = "white", 
                        midpoint = 0, limit = c(-1,1), space = "Lab", 
                        name="Pearson\nCorrelation") +
   theme_minimal()+ 
@@ -125,6 +127,7 @@ y2.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
                                    size = 12, hjust = 1),
         axis.title = element_blank())+
   coord_fixed()
+#all positively correlated
 
 #check missingness
 sum(is.na(y2_exposure)) #number total obs
@@ -133,45 +136,49 @@ missing <- y2_exposure %>% mutate(missing = rowSums(is.na(y2_exposure))) %>% sel
 length(which(missing$missing >0)) #number of children with missing data
 mean(missing$missing[missing$missing >0]) #average missing per child
 
-#impute median
-y2_impute <- y2_exposure
-for(i in 1:ncol(y2_impute)){
-  y2_impute[is.na(y2_impute[,i]), i] <- median(y2_impute[,i], na.rm = TRUE)
-}
-
-#check correlations
-corrplot(cor(y2_impute), method="ellipse") 
-#all positively correlated, moreso than year 1
+#impute using kNN
+set.seed(12345) #reset seed
+missing.model = preProcess(y2_exposure, "knnImpute")
+y2_impute = predict(missing.model, y2_exposure); sum(is.na(y2_impute))
 
 #scale
 y2_impute_scale <- scale(y2_impute, center = FALSE)
 
 #run pca
 y2_pca <- prcomp(y2_impute_scale)
-summary(y2_pca) #first PC accounts for 26.5% of variance
+summary(y2_pca)
 #diagnostic plots
 screeplot(y2_pca, npcs = 10, type = "lines")
 biplot(y2_pca)
 
-#bind back to dataset
-y2.pc.ids <- y2_pca$x[,c(1:10)] 
-colnames(y2.pc.ids) <- paste(colnames(y2.pc.ids), "y2", sep = "_")
-y2.pc.ids <- cbind(childid = y2_id, y2.pc.ids)
+#bind back to ids
+pred <- predict(y2_pca, newdata=y2_impute)
+colnames(pred) <- paste(colnames(pred), "y2", sep = "_")
+colnames(y2_impute) <- paste(colnames(y2_impute), "imp", sep = "_")
+colnames(y2_impute_scale) <- paste(colnames(as.data.frame(y2_impute_scale)), "imp_scale", sep = "_")
+y2.pc.ids <- as.data.frame(cbind(childid = y2_id, y2_impute, y2_impute_scale, pred[,1:10]))
 
-#visualize 
+#create sum score
+y2.pc.ids$sumscore_y2 <- rowSums(y2.pc.ids[,c(17:31)])
+#plot PC1 vs sum score
+ggplot(data = y2.pc.ids, aes(x = sumscore, y = PC1_y2)) +
+  geom_point()+
+  labs(x = "Sum Score (Year 2)", y = "PC1 (Year 2)") +
+  ylim(-5,20)
+
+#visualize
 y2_loadings <- as.matrix(y2_pca$rotation[,c(1:10)])
 y2_loadings_long <- as.data.frame(cbind(cytokine = rownames(y2_loadings), y2_loadings[,1:10]))
 y2_loadings_long <- pivot_longer(y2_loadings_long, cols = starts_with("PC"), 
-                              names_to = "PC", values_to = "value")
+                                 names_to = "PC", values_to = "value")
 
 y2_loadings_long$value <- as.numeric(y2_loadings_long$value)
 y2_loadings_long$PC <- factor(y2_loadings_long$PC, levels = c("PC1","PC2","PC3","PC4","PC5",
-                                                        "PC6","PC7","PC8","PC9","PC10"))
+                                                              "PC6","PC7","PC8","PC9","PC10"))
 
 cytokine.levels.y2 <- c("il10_t3", "il21_t3", "il17_t3",  
-                     "il13_t3", "il5_t3","il4_t3","ifng_t3","il12_t3",
-                     "il2_t3", "gmcsf_t3","tnfa_t3", "il6_t3", "il1_t3")
-
+                        "il13_t3", "il5_t3","il4_t3","ifng_t3","il12_t3",
+                        "il2_t3", "gmcsf_t3","tnfa_t3", "il6_t3", "il1_t3")
 y2_loadings_long$cytokine <- factor(y2_loadings_long$cytokine, 
                                     levels = cytokine.levels.y2,
                                     labels = c("IL-10", "IL-21","IL-17",   
@@ -212,8 +219,9 @@ y2.density.plots <- ggplot(data = long) +
   ylim(0, 3)
 
 #export results
-pca.results <- merge(y1.pc.ids, y2.pc.ids, by = "childid")
-#write.csv(pca.results, file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
+pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
+write.csv(pca.results,
+          file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
 
 ####### sensitivity analysis - PCA with complete cases
 #year 1
