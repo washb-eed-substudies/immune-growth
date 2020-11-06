@@ -10,8 +10,8 @@ library(RANN)
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
 
 #select PCA variables
-y1_exposure <- select(d, childid, grep("_t2", names(d), value=T))
-y1_exposure <- y1_exposure[,c(1, 4:18)]
+y1_exposure <- select(d, childid, grep("t2_ln", names(d), value=T))
+y1_exposure <- y1_exposure[,c(1, 3:17)]
 
 #remove observations with all missing data except childid
 y1_exposure <- y1_exposure[rowSums(is.na(y1_exposure)) != ncol(y1_exposure)-1,]
@@ -49,11 +49,12 @@ set.seed(12345)
 missing.model = preProcess(y1_exposure, "knnImpute")
 y1_impute = predict(missing.model, y1_exposure); sum(is.na(y1_impute))
 
-#scale
-y1_impute_scale <- scale(y1_impute, center = FALSE)
+#check distributions
+densityplot(y1_exposure$t2_ln_tnf)
+densityplot(y1_impute$t2_ln_tnf)
   
 #run pca
-y1_pca <- prcomp(y1_impute_scale)
+y1_pca <- prcomp(y1_impute)
 summary(y1_pca) 
 #diagnostic plots
 screeplot(y1_pca, npcs = 10, type = "lines")
@@ -63,17 +64,20 @@ biplot(y1_pca)
 pred <- predict(y1_pca, newdata=y1_impute)
 colnames(pred) <- paste(colnames(pred), "y1", sep = "_")
 colnames(y1_impute) <- paste(colnames(y1_impute), "imp", sep = "_")
-colnames(y1_impute_scale) <- paste(colnames(as.data.frame(y1_impute_scale)), "imp_scale", sep = "_")
-y1.pc.ids <- as.data.frame(cbind(childid = y1_id, y1_impute, y1_impute_scale, pred[,1:10]))
+y1.pc.ids <- as.data.frame(cbind(childid = y1_id, y1_impute, pred[,1:10]))
 
 #create sum score
-y1.pc.ids$sumscore_y1 <- rowSums(y1.pc.ids[,c(17:31)])
-#plot PC1 vs sum score
-ggplot(data = y1.pc.ids, aes(x = sumscore, y = PC1_y1)) +
+y1.pc.ids$sumscore_y1 <- rowSums(y1.pc.ids[,c(2:16)])
+
+#plot sum score
+ggplot(data = y1.pc.ids) +
+  geom_density(aes(x = sumscore_y1))+
+  labs(x = "Sum Score (Year 1)")
+
+ggplot(data = y1.pc.ids, aes(x = sumscore_y1, y = PC1_y1)) +
   geom_point()+
-  labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)") +
-  ylim(-5,20) +
-  xlim(-15,43)
+  labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)")+
+  ylim(-9,6.25)
 
 #visualize
 y1_loadings <- as.matrix(y1_pca$rotation[,c(1:10)])
@@ -85,9 +89,9 @@ y1_loadings_long$value <- as.numeric(y1_loadings_long$value)
 y1_loadings_long$PC <- factor(y1_loadings_long$PC, levels = c("PC1","PC2","PC3","PC4","PC5",
                                                         "PC6","PC7","PC8","PC9","PC10"))
 
-cytokine.levels.y1 <- c("agp_t2", "crp_t2","il10_t2", "il21_t2", "il17_t2",  
-                     "il13_t2", "il5_t2","il4_t2","ifng_t2","il12_t2",
-                     "il2_t2", "gmcsf_t2","tnfa_t2", "il6_t2", "il1_t2")
+cytokine.levels.y1 <- c("t2_ln_agp", "t2_ln_crp","t2_ln_il10", "t2_ln_il21", "t2_ln_il17",  
+                     "t2_ln_il13", "t2_ln_il5","t2_ln_il4","t2_ln_ifn","t2_ln_il12",
+                     "t2_ln_il2", "t2_ln_gmc","t2_ln_tnf", "t2_ln_il6", "t2_ln_il1")
 y1_loadings_long$cytokine <- factor(y1_loadings_long$cytokine, 
                                  levels = cytokine.levels.y1,
                                  labels = c("AGP","CRP","IL-10", "IL-21","IL-17",   
@@ -102,8 +106,8 @@ y1.loadings.plot <- ggplot(data = y1_loadings_long) +
 
 #----------Year 2-------------#
 #select PCA variables
-y2_exposure <- select(d, childid, grep("_t3", names(d), value=T))
-y2_exposure <- y2_exposure[,c(1, 4:16)]
+y2_exposure <- select(d, childid, grep("t3_ln", names(d), value=T))
+y2_exposure <- y2_exposure[,c(1, 3:15)]
 
 #remove observations with all missing data except childid
 y2_exposure <- y2_exposure[rowSums(is.na(y2_exposure)) != ncol(y2_exposure)-1,]
@@ -141,11 +145,8 @@ set.seed(12345) #reset seed
 missing.model = preProcess(y2_exposure, "knnImpute")
 y2_impute = predict(missing.model, y2_exposure); sum(is.na(y2_impute))
 
-#scale
-y2_impute_scale <- scale(y2_impute, center = FALSE)
-
 #run pca
-y2_pca <- prcomp(y2_impute_scale)
+y2_pca <- prcomp(y2_impute)
 summary(y2_pca)
 #diagnostic plots
 screeplot(y2_pca, npcs = 10, type = "lines")
@@ -155,16 +156,20 @@ biplot(y2_pca)
 pred <- predict(y2_pca, newdata=y2_impute)
 colnames(pred) <- paste(colnames(pred), "y2", sep = "_")
 colnames(y2_impute) <- paste(colnames(y2_impute), "imp", sep = "_")
-colnames(y2_impute_scale) <- paste(colnames(as.data.frame(y2_impute_scale)), "imp_scale", sep = "_")
-y2.pc.ids <- as.data.frame(cbind(childid = y2_id, y2_impute, y2_impute_scale, pred[,1:10]))
+y2.pc.ids <- as.data.frame(cbind(childid = y2_id, y2_impute, pred[,1:10]))
 
 #create sum score
-y2.pc.ids$sumscore_y2 <- rowSums(y2.pc.ids[,c(17:31)])
-#plot PC1 vs sum score
-ggplot(data = y2.pc.ids, aes(x = sumscore, y = PC1_y2)) +
+y2.pc.ids$sumscore_y2 <- rowSums(y2.pc.ids[,c(2:14)])
+
+#plot sum score
+ggplot(data = y2.pc.ids) +
+  geom_density(aes(x = sumscore_y2))+
+  labs(x = "Sum Score (Year 2)")
+
+ggplot(data = y2.pc.ids, aes(x = sumscore_y2, y = PC1_y2)) +
   geom_point()+
-  labs(x = "Sum Score (Year 2)", y = "PC1 (Year 2)") +
-  ylim(-5,20)
+  labs(x = "Sum Score (Year 2)", y = "PC1 (Year 2)")+
+  ylim(-8.25,6.25)
 
 #visualize
 y2_loadings <- as.matrix(y2_pca$rotation[,c(1:10)])
@@ -176,9 +181,9 @@ y2_loadings_long$value <- as.numeric(y2_loadings_long$value)
 y2_loadings_long$PC <- factor(y2_loadings_long$PC, levels = c("PC1","PC2","PC3","PC4","PC5",
                                                               "PC6","PC7","PC8","PC9","PC10"))
 
-cytokine.levels.y2 <- c("il10_t3", "il21_t3", "il17_t3",  
-                        "il13_t3", "il5_t3","il4_t3","ifng_t3","il12_t3",
-                        "il2_t3", "gmcsf_t3","tnfa_t3", "il6_t3", "il1_t3")
+cytokine.levels.y2 <- c("t3_ln_il10", "t3_ln_il21", "t3_ln_il17",  
+                        "t3_ln_il13", "t3_ln_il5","t3_ln_il4","t3_ln_ifn","t3_ln_il12",
+                        "t3_ln_il2", "t3_ln_gmc","t3_ln_tnf", "t3_ln_il6", "t3_ln_il1")
 y2_loadings_long$cytokine <- factor(y2_loadings_long$cytokine, 
                                     levels = cytokine.levels.y2,
                                     labels = c("IL-10", "IL-21","IL-17",   
@@ -201,9 +206,7 @@ long$PC <- factor(long$PC, levels = c("PC1_y1","PC2_y1","PC3_y1","PC4_y1","PC5_y
 
 y1.density.plots <- ggplot(data = long) +
   geom_density(aes(x = value))+
-  facet_wrap(~PC)+
-  xlim(-2.5,2.5)+
-  ylim(0, 3)
+  facet_wrap(~PC)
 
 #y2
 long <- pivot_longer(as.data.frame(y2.pc.ids), cols = starts_with("PC"), 
@@ -214,9 +217,7 @@ long$PC <- factor(long$PC, levels = c("PC1_y2","PC2_y2","PC3_y2","PC4_y2","PC5_y
 
 y2.density.plots <- ggplot(data = long) +
   geom_density(aes(x = value))+
-  facet_wrap(~PC)+
-  xlim(-2.5,2.5)+
-  ylim(0, 3)
+  facet_wrap(~PC)
 
 #export results
 pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
