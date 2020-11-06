@@ -1,11 +1,13 @@
 ---
 title: "Immune status and growth tables"
 output:
-  word_document:
-    toc_depth: '7'
   html_document:
     fig_width: 8
     toc_depth: 7
+  pdf_document:
+    toc_depth: '7'
+  word_document:
+    toc_depth: '7'
 ---
 
 ```{r include=FALSE}
@@ -24,9 +26,8 @@ table3.adj <- readRDS(here("results/adjusted/H3_adj_nofever_res.RDS"))
 
 table4 <- readRDS(here("results/unadjusted/delta_growth_res.RDS"))
 table4.adj <- readRDS(here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
-```
 
-```{r echo=FALSE}
+#Concurrent growth
 t1 <- data.frame(year = c(rep(1, 40), rep(2, 32)),  
                  measurement = rep(c("LAZ", "WAZ", "WLZ", "HCZ"), 18),
                  ratio = c(rep("Pro/IL-10", 4),
@@ -85,9 +86,7 @@ HCZ.t1 <- t1 %>%
   dplyr::select(ratio,year,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
                 q1.out2,q3.out2, adj.diff,p.value)
 
-```
-
-```{r echo=FALSE}
+#Subsequent growth
 t2 <- data.frame(measurement = rep(c("LAZ", "WAZ", "WLZ", "HCZ"), 10),
                  ratio = c(rep("Pro/IL-10", 4),
                            rep("IL-2/IL-10", 4),
@@ -137,10 +136,7 @@ HCZ.t2 <- t2 %>%
   dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
                 q1.out2,q3.out2,adj.diff,p.value)
 
-```
-
-
-```{r echo=FALSE}
+#Growth velocity
 t3 <- data.frame(measurement = rep(c("Length velocity", "Weight velocity", 
                                      "Head circumference velocity"), 10),
                  ratio = c(rep("Pro/IL-10", 3),
@@ -185,10 +181,7 @@ hc.t3 <- t3 %>%
   dplyr::select(ratio,q1.exp,q3.exp,q1.out,q3.out,unadj.diff,
                 q1.out2,q3.out2,adj.diff,p.value)
 
-```
-
-
-```{r echo=FALSE}
+#Table 4 - Year 1/Year 2 difference
 t4 <- data.frame(measurement = rep(c("dLAZ", "dWAZ", "dWLZ", "dHCZ"), 10),
                  ratio = c(rep("Pro/IL-10", 4),
                            rep("IL-2/IL-10", 4),
@@ -429,4 +422,30 @@ kable(HCZ.t4,
                 "Adjus. pred. Q1 HCZ change", "Adjus. pred. Q3 HCZ change",
                 "Adj. mean diff. in HCZ change (95% CI)", "p-value"),
   booktabs = TRUE)
+```
+### Significant associations
+```{r echo=FALSE}
+t1.sig <- t1 %>%
+  filter(p.value <= 0.05) %>%
+  mutate(time = "Concurrent") %>%
+  select(time, year, ratio, measurement, adj.diff, p.value)
+
+t2.sig <- t2 %>%
+  filter(p.value <= 0.05) %>%
+  mutate(year = "", time = "Subsequent") %>%
+  select(time, year, ratio, measurement, adj.diff, p.value)
+
+t3.sig <- t1 %>%
+  filter(p.value <= 0.05) %>%
+  mutate(year = "", time = "Velocity") %>%
+  select(time, year, ratio, measurement, adj.diff, p.value)
+
+t4.sig <- t1 %>%
+  filter(p.value <= 0.05) %>%
+  mutate(year = "", time = "Delta") %>%
+  select(time, year, ratio, measurement, adj.diff, p.value)
+
+sig.total <- rbind(t1.sig, t2.sig, t3.sig, t4.sig)
+kable(sig.total,
+  align = 'lccccr')
 ```
