@@ -9,7 +9,8 @@ library(RANN)
 #read in data
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
 
-#select PCA variables
+#####  Year 1
+#select immune variables
 y1_exposure <- select(d, childid, grep("t2_ln", names(d), value=T))
 y1_exposure <- y1_exposure[,c(1, 3:17)]
 
@@ -21,8 +22,6 @@ y1_exposure <- y1_exposure[,-1] #remove ids from PCA dataset
 
 #check correlation prior to imputation
 cormat <- round(cor(y1_exposure, use="pairwise.complete.obs"),2)
-
-#plot correlation
 cormat[lower.tri(cormat)]<- NA
 melted_cormat <- melt(cormat, na.rm = TRUE)
 y1.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
@@ -79,7 +78,7 @@ ggplot(data = y1.pc.ids, aes(x = sumscore_y1, y = PC1_y1)) +
   labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)")+
   ylim(-9,6.25)
 
-#visualize
+#visualize PC loadings
 y1_loadings <- as.matrix(y1_pca$rotation[,c(1:10)])
 y1_loadings_long <- as.data.frame(cbind(cytokine = rownames(y1_loadings), y1_loadings[,1:10]))
 y1_loadings_long <- pivot_longer(y1_loadings_long, cols = starts_with("PC"), 
@@ -117,8 +116,6 @@ y2_exposure <- y2_exposure[,-1] #remove ids from PCA dataset
 
 #check correlation prior to imputation
 cormat <- round(cor(y2_exposure, use="pairwise.complete.obs"),2)
-
-#plot correlation
 cormat[lower.tri(cormat)]<- NA
 melted_cormat <- melt(cormat, na.rm = TRUE)
 y2.corr <- ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
@@ -171,7 +168,7 @@ ggplot(data = y2.pc.ids, aes(x = sumscore_y2, y = PC1_y2)) +
   labs(x = "Sum Score (Year 2)", y = "PC1 (Year 2)")+
   ylim(-8.25,6.25)
 
-#visualize
+#visualize PC loadings
 y2_loadings <- as.matrix(y2_pca$rotation[,c(1:10)])
 y2_loadings_long <- as.data.frame(cbind(cytokine = rownames(y2_loadings), y2_loadings[,1:10]))
 y2_loadings_long <- pivot_longer(y2_loadings_long, cols = starts_with("PC"), 
@@ -204,7 +201,7 @@ long <- pivot_longer(as.data.frame(y1.pc.ids), cols = starts_with("PC"),
 long$PC <- factor(long$PC, levels = c("PC1_y1","PC2_y1","PC3_y1","PC4_y1","PC5_y1",
                                       "PC6_y1","PC7_y1","PC8_y1","PC9_y1","PC10_y1"))
 
-y1.density.plots <- ggplot(data = long) +
+y1.score.density.plots <- ggplot(data = long) +
   geom_density(aes(x = value))+
   facet_wrap(~PC)
 
@@ -215,7 +212,7 @@ long <- pivot_longer(as.data.frame(y2.pc.ids), cols = starts_with("PC"),
 long$PC <- factor(long$PC, levels = c("PC1_y2","PC2_y2","PC3_y2","PC4_y2","PC5_y2",
                                       "PC6_y2","PC7_y2","PC8_y2","PC9_y2","PC10_y2"))
 
-y2.density.plots <- ggplot(data = long) +
+y2.score.density.plots <- ggplot(data = long) +
   geom_density(aes(x = value))+
   facet_wrap(~PC)
 
