@@ -43,37 +43,46 @@ missing <- y1_exposure %>% mutate(missing = rowSums(is.na(y1_exposure))) %>% sel
 length(which(missing$missing >0)) #number of children with missing data
 mean(missing$missing[missing$missing >0]) #average missing per child
 
+#save means and SD for back transformation
+y1.means <- sapply(y1_exposure, mean, na.rm = TRUE)
+y1.sd <- sapply(y1_exposure, sd, na.rm = TRUE)
+
 #impute using kNN
 set.seed(12345)
 missing.model = preProcess(y1_exposure, "knnImpute")
-y1_impute = predict(missing.model, y1_exposure); sum(is.na(y1_impute))
+y1_impute.Z = predict(missing.model, y1_exposure); sum(is.na(y1_impute.Z))
 
 #check distributions
 densityplot(y1_exposure$t2_ln_tnf)
-densityplot(y1_impute$t2_ln_tnf)
+densityplot(y1_impute.Z$t2_ln_tnf)
   
 #run pca
-y1_pca <- prcomp(y1_impute)
+y1_pca <- prcomp(y1_impute.Z)
 summary(y1_pca) 
 #diagnostic plots
 screeplot(y1_pca, npcs = 10, type = "lines")
 biplot(y1_pca)
 
+#backtransform imputed variables from Z-scores
+y1_impute <- sweep(y1_impute.Z, MARGIN=2, y1.sd, `*`)
+y1_impute <- sweep(y1_impute, MARGIN=2, y1.means, `+`)
+
 #bind back to ids
-pred <- predict(y1_pca, newdata=y1_impute)
-colnames(pred) <- paste(colnames(pred), "y1", sep = "_")
+pred <- predict(y1_pca, newdata=y1_impute.Z)
+colnames(pred) <- paste(colnames(pred), "t2", sep = "_")
 colnames(y1_impute) <- paste(colnames(y1_impute), "imp", sep = "_")
-y1.pc.ids <- as.data.frame(cbind(childid = y1_id, y1_impute, pred[,1:10]))
+colnames(y1_impute.Z) <- paste(colnames(y1_impute.Z), "imp_z", sep = "_")
+y1.pc.ids <- as.data.frame(cbind(childid = y1_id, y1_impute, y1_impute.Z, pred[,1:10]))
 
 #create sum score
-y1.pc.ids$sumscore_y1 <- rowSums(y1.pc.ids[,c(2:16)])
+y1.pc.ids$sumscore_t2 <- rowSums(y1.pc.ids[,c(17:31)])
 
 #plot sum score
 ggplot(data = y1.pc.ids) +
-  geom_density(aes(x = sumscore_y1))+
+  geom_density(aes(x = sumscore_t2))+
   labs(x = "Sum Score (Year 1)")
 
-ggplot(data = y1.pc.ids, aes(x = sumscore_y1, y = PC1_y1)) +
+ggplot(data = y1.pc.ids, aes(x = sumscore_t2, y = PC1_t2)) +
   geom_point()+
   labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)")+
   ylim(-9,6.25)
@@ -137,36 +146,49 @@ missing <- y2_exposure %>% mutate(missing = rowSums(is.na(y2_exposure))) %>% sel
 length(which(missing$missing >0)) #number of children with missing data
 mean(missing$missing[missing$missing >0]) #average missing per child
 
+#save means and SD for back transformation
+y2.means <- sapply(y2_exposure, mean, na.rm = TRUE)
+y2.sd <- sapply(y2_exposure, sd, na.rm = TRUE)
+
 #impute using kNN
-set.seed(12345) #reset seed
+set.seed(12345)
 missing.model = preProcess(y2_exposure, "knnImpute")
-y2_impute = predict(missing.model, y2_exposure); sum(is.na(y2_impute))
+y2_impute.Z = predict(missing.model, y2_exposure); sum(is.na(y2_impute.Z))
+
+#check distributions
+densityplot(y2_exposure$t3_ln_tnf)
+densityplot(y2_impute.Z$t3_ln_tnf)
 
 #run pca
-y2_pca <- prcomp(y2_impute)
-summary(y2_pca)
+y2_pca <- prcomp(y2_impute.Z)
+summary(y2_pca) 
 #diagnostic plots
 screeplot(y2_pca, npcs = 10, type = "lines")
 biplot(y2_pca)
 
+#backtransform imputed variables from Z-scores
+y2_impute <- sweep(y2_impute.Z, MARGIN=2, y2.sd, `*`)
+y2_impute <- sweep(y2_impute, MARGIN=2, y2.means, `+`)
+
 #bind back to ids
-pred <- predict(y2_pca, newdata=y2_impute)
-colnames(pred) <- paste(colnames(pred), "y2", sep = "_")
+pred <- predict(y2_pca, newdata=y2_impute.Z)
+colnames(pred) <- paste(colnames(pred), "t3", sep = "_")
 colnames(y2_impute) <- paste(colnames(y2_impute), "imp", sep = "_")
-y2.pc.ids <- as.data.frame(cbind(childid = y2_id, y2_impute, pred[,1:10]))
+colnames(y2_impute.Z) <- paste(colnames(y2_impute.Z), "imp_z", sep = "_")
+y2.pc.ids <- as.data.frame(cbind(childid = y2_id, y2_impute, y2_impute.Z, pred[,1:10]))
 
 #create sum score
-y2.pc.ids$sumscore_y2 <- rowSums(y2.pc.ids[,c(2:14)])
+y2.pc.ids$sumscore_t3 <- rowSums(y2.pc.ids[,c(17:31)])
 
 #plot sum score
 ggplot(data = y2.pc.ids) +
-  geom_density(aes(x = sumscore_y2))+
-  labs(x = "Sum Score (Year 2)")
+  geom_density(aes(x = sumscore_t3))+
+  labs(x = "Sum Score (Year 1)")
 
-ggplot(data = y2.pc.ids, aes(x = sumscore_y2, y = PC1_y2)) +
+ggplot(data = y2.pc.ids, aes(x = sumscore_t3, y = PC1_t3)) +
   geom_point()+
-  labs(x = "Sum Score (Year 2)", y = "PC1 (Year 2)")+
-  ylim(-8.25,6.25)
+  labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)")+
+  ylim(-9,6.25)
 
 #visualize PC loadings
 y2_loadings <- as.matrix(y2_pca$rotation[,c(1:10)])
@@ -193,6 +215,11 @@ y2.loadings.plot <- ggplot(data = y2_loadings_long) +
   scale_fill_viridis(name = "Value") +
   labs(x = "Principal component", subtitle = "Year 2 PCA loadings")
 
+#export results
+pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
+write.csv(pca.results,
+          file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
+
 #density plots of distribution of principal components
 #y1
 long <- pivot_longer(as.data.frame(y1.pc.ids), cols = starts_with("PC"), 
@@ -215,11 +242,6 @@ long$PC <- factor(long$PC, levels = c("PC1_y2","PC2_y2","PC3_y2","PC4_y2","PC5_y
 y2.score.density.plots <- ggplot(data = long) +
   geom_density(aes(x = value))+
   facet_wrap(~PC)
-
-#export results
-pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
-write.csv(pca.results,
-          file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
 
 ####### sensitivity analysis - PCA with complete cases
 #year 1
