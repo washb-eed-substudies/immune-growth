@@ -83,7 +83,7 @@ for(i in 1:nrow(H1_models)){
 saveRDS(H1_models, here("models/H1_models.RDS"))
 
 #Save results
-#saveRDS(H1_res, here("results/unadjusted/H1_res.RDS"))
+saveRDS(H1_res, here("results/unadjusted/H1_res.RDS"))
 
 
 #Save plots
@@ -133,7 +133,7 @@ for(i in 1:nrow(H2_models)){
 saveRDS(H2_models, here("models/H2_models.RDS"))
 
 #Save results
-#saveRDS(H2_res, here("results/unadjusted/H2_res.RDS"))
+saveRDS(H2_res, here("results/unadjusted/H2_res.RDS"))
 
 
 #Save plots
@@ -183,7 +183,7 @@ for(i in 1:nrow(H3_models)){
 saveRDS(H3_models, here("models/H3_models.RDS"))
 
 #Save results
-#saveRDS(H3_res, here("results/unadjusted/H3_res.RDS"))
+saveRDS(H3_res, here("results/unadjusted/H3_res.RDS"))
 
 
 #Save plots
@@ -232,7 +232,7 @@ for(i in 1:nrow(delta_growth_models)){
 saveRDS(delta_growth_models, here("models/delta_growth_models.RDS"))
 
 #Save results
-#saveRDS(delta_growth_res, here("results/unadjusted/delta_growth_res.RDS"))
+saveRDS(delta_growth_res, here("results/unadjusted/delta_growth_res.RDS"))
 
 
 #Save plots
@@ -240,19 +240,3 @@ saveRDS(delta_growth_models, here("models/delta_growth_models.RDS"))
 
 #Save plot data
 saveRDS(delta_growth_plot_data, here("figure-data/delta_growth_unadj_spline_data.RDS"))
-
-# Adjust Pvalues with Benjamini-Hochberg procedure
-full_res <- rbind(H1_res, H2_res, H3_res, delta_growth_res)
-full_res$corrected.Pval <- p.adjust(full_res[['Pval']], method="BH")
-
-H1_corr_res<-full_res[1:nrow(H1_res),]
-H2_corr_res<-full_res[(nrow(H1_res)+1):(nrow(H1_res)+nrow(H2_res)),]
-H3_corr_res<-full_res[(nrow(H1_res)+nrow(H2_res)+1):(nrow(H1_res)+nrow(H2_res)+nrow(H3_res)),]
-delta_growth_corr_res<-full_res[(nrow(full_res)-nrow(delta_growth_res)+1):nrow(full_res),]
-
-
-#Save results
-saveRDS(H1_corr_res, here("results/unadjusted/H1_res.RDS"))
-saveRDS(H2_corr_res, here("results/unadjusted/H2_res.RDS"))
-saveRDS(H3_corr_res, here("results/unadjusted/H3_res.RDS"))
-saveRDS(delta_growth_corr_res, here("results/unadjusted/delta_growth_res.RDS"))

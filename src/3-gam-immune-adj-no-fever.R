@@ -94,7 +94,7 @@ for(i in 1:nrow(H1_adj_nofever_models)){
 #saveRDS(H1_adj_nofever_models, paste0(dropboxDir,"results/stress-growth-models/models/H1_adj_nofever_models.RDS"))
 
 #Save results
-#saveRDS(H1_adj_nofever_res, here("results/adjusted/H1_adj_nofever_res.RDS"))
+saveRDS(H1_adj_nofever_res, here("results/adjusted/H1_adj_nofever_res.RDS"))
 
 #Save plots
 #saveRDS(H1_adj_nofever_plot_list, paste0(dropboxDir,"results/stress-growth-models/figure-objects/H1_adj_nofever_splines.RDS"))
@@ -146,7 +146,7 @@ for(i in 1:nrow(H2_adj_nofever_models)){
 #saveRDS(H2_adj_nofever_models, paste0(dropboxDir,"results/stress-growth-models/models/adj_nofever_H2_adj_nofever_models.RDS"))
 
 #Save results
-#saveRDS(H2_adj_nofever_res, here("results/adjusted/H2_adj_nofever_res.RDS"))
+saveRDS(H2_adj_nofever_res, here("results/adjusted/H2_adj_nofever_res.RDS"))
 
 
 #Save plots
@@ -196,7 +196,7 @@ for(i in 1:nrow(H3_adj_nofever_models)){
 #saveRDS(H3_adj_nofever_models, paste0(dropboxDir,"results/stress-growth-models/models/adj_nofever_H3_adj_nofever_models.RDS"))
 
 #Save results
-#saveRDS(H3_adj_nofever_res, here("results/adjusted/H3_adj_nofever_res.RDS"))
+saveRDS(H3_adj_nofever_res, here("results/adjusted/H3_adj_nofever_res.RDS"))
 
 
 #Save plots
@@ -247,7 +247,7 @@ for(i in 1:nrow(delta_growth_adj_nofever_models)){
 #saveRDS(delta_growth_adj_nofever_models, paste0(dropboxDir,"results/stress-growth-models/models/adj_nofever_delta_growth_adj_nofever_models.RDS"))
 
 #Save results
-#saveRDS(delta_growth_adj_nofever_res, here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
+saveRDS(delta_growth_adj_nofever_res, here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
 
 
 #Save plots
@@ -255,19 +255,3 @@ for(i in 1:nrow(delta_growth_adj_nofever_models)){
 
 #Save plot data
 saveRDS(delta_growth_adj_nofever_plot_data, here("figure-data/delta_growth_adj_nofever_spline_data.RDS"))
-
-
-# Adjust Pvalues with Benjamini-Hochberg procedure
-full_res <- rbind(H1_adj_nofever_res, H2_adj_nofever_res, H3_adj_nofever_res, delta_growth_adj_nofever_res)
-full_res$corrected.Pval <- p.adjust(full_res[['Pval']], method="BH")
-
-H1_corr_res<-full_res[1:nrow(H1_adj_nofever_res),]
-H2_corr_res<-full_res[(nrow(H1_adj_nofever_res)+1):(nrow(H1_adj_nofever_res)+nrow(H2_adj_nofever_res)),]
-H3_corr_res<-full_res[(nrow(H1_adj_nofever_res)+nrow(H2_adj_nofever_res)+1):(nrow(H1_adj_nofever_res)+nrow(H2_adj_nofever_res)+nrow(H3_adj_nofever_res)),]
-delta_growth_corr_res<-full_res[(nrow(full_res)-nrow(delta_growth_adj_nofever_res)+1):nrow(full_res),]
-
-#Save results
-saveRDS(H1_corr_res, here("results/adjusted/H1_adj_nofever_res.RDS"))
-saveRDS(H2_corr_res, here("results/adjusted/H2_adj_nofever_res.RDS"))
-saveRDS(H3_corr_res, here("results/adjusted/H3_adj_nofever_res.RDS"))
-saveRDS(delta_growth_corr_res, here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
