@@ -76,6 +76,7 @@ y1.pc.ids <- as.data.frame(cbind(childid = y1_id, y1_impute, y1_impute.Z, pred[,
 
 #create sum score
 y1.pc.ids$sumscore_t2 <- rowSums(y1.pc.ids[,c(17:31)])
+y1.pc.ids$sumscore_t2_Z <- scale(y1.pc.ids$sumscore_t2, center = TRUE, scale = TRUE)
 
 #plot sum score
 ggplot(data = y1.pc.ids) +
@@ -179,13 +180,14 @@ y2.pc.ids <- as.data.frame(cbind(childid = y2_id, y2_impute, y2_impute.Z, pred[,
 
 #create sum score
 y2.pc.ids$sumscore_t3 <- rowSums(y2.pc.ids[,c(17:31)])
+y2.pc.ids$sumscore_t3_Z <- scale(y2.pc.ids$sumscore_t3, center = TRUE, scale = TRUE)
 
 #plot sum score
 ggplot(data = y2.pc.ids) +
   geom_density(aes(x = sumscore_t3))+
   labs(x = "Sum Score (Year 1)")
 
-ggplot(data = y2.pc.ids, aes(x = sumscore_t3, y = PC1_t3)) +
+ggplot(data = y2.pc.ids, aes(x = sumscore_t3_Z, y = PC1_t3)) +
   geom_point()+
   labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)")+
   ylim(-9,6.25)
@@ -218,7 +220,7 @@ y2.loadings.plot <- ggplot(data = y2_loadings_long) +
 #export results
 pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
 write.csv(pca.results,
-          file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
+          file = "/Volumes/External 1TB Drive 2/immune-growth/results/clustering pca/PCA results.csv")
 
 #density plots of distribution of principal components
 #y1
