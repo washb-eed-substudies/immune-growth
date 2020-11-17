@@ -220,7 +220,7 @@ y2.loadings.plot <- ggplot(data = y2_loadings_long) +
 #export results
 pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
 write.csv(pca.results,
-          file = "/Volumes/External 1TB Drive 2/immune-growth/results/clustering pca/PCA results.csv")
+          file = "~/Documents/immune-growth/results/clustering pca.csv")
 
 #density plots of distribution of principal components
 #y1
