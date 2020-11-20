@@ -98,7 +98,8 @@ y1.impute <- sweep(y1.impute, MARGIN=2, y1.means, `+`)
 #create imputed ratios
 y1.cluster_imp <- exp(y1.impute)
 names(y1.cluster_imp) = gsub(pattern = "_ln", replacement = "", x = names(y1.cluster_imp))
-y1.cluster_imp <- as.data.frame(scale(y1.cluster_imp, center = FALSE))
+y1.cluster_imp <- as.data.frame(scale(y1.cluster_imp, center = FALSE, 
+                                      scale = apply(y1.cluster_imp, 2, sd, na.rm = TRUE)))
 y1.cluster_imp <- y1.cluster_imp %>%
   mutate(pro = t2_il1 + t2_il6 + t2_tnf,
          th1 = t2_il12 + t2_ifn,
@@ -235,8 +236,9 @@ y2.impute <- sweep(y2.impute, MARGIN=2, y2.means, `+`)
 #create imputed ratios
 y2.cluster_imp <- exp(y2.impute)
 names(y2.cluster_imp) = gsub(pattern = "_ln", replacement = "", x = names(y2.cluster_imp))
-y2.cluster_imp <- as.data.frame(scale(y2.cluster_imp, center = FALSE))
-y2.cluster_imp <- y1.cluster_imp %>%
+y2.cluster_imp <- as.data.frame(scale(y2.cluster_imp, center = FALSE, 
+                                      scale = apply(y2.cluster_imp, 2, sd, na.rm = TRUE)))
+y2.cluster_imp <- y2.cluster_imp %>%
   mutate(pro = t3_il1 + t3_il6 + t3_tnf,
          th1 = t3_il12 + t3_ifn,
          th2 = t3_il4 + t3_il5 + t3_il13,
@@ -288,6 +290,10 @@ pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
 pca.results$flag.y1[is.na(pca.results$flag.y1)] <- 0
 pca.results$flag.y2[is.na(pca.results$flag.y2)] <- 0
 
+##### export results
+write.csv(pca.results,
+          file = "~/Documents/immune-growth/results/clustering pca/PCA results.csv")
+
 ##### crosscheck imputed values
 d2 <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
 
@@ -301,51 +307,54 @@ d3 <- merge(d2, pca.results, by = "childid", all = TRUE)
 d3 <- d3 %>% 
   select(childid, flag.y1, starts_with("t2_ratio_gmc"))
 
+#--------------------------------Maternal cytokines --------------------------#
+d <- read.csv(file = paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-dm-ee-pregnancy-immune-ln-lab.csv"))
+
+#####  Year 1
+#select immune variables
+mom <- select(d, dataid, grep("mom_t0_ln", names(d), value=T))
+
+mom <- mom[rowSums(is.na(mom)) < 13,]
+nrow(mom) #remaining obs
+mom.cytokine <- mom[,c(2:14)]
+
+#check missingness with children that have at least one measurement
+sum(is.na(mom.cytokine)) #number total obs
+colSums(is.na(mom.cytokine)) #number by cytokine
+missing <- mom.cytokine %>% mutate(missing = rowSums(is.na(mom.cytokine)))
+length(which(missing$missing >0)) #number of children with missing data
+mean(missing$missing[missing$missing >0]) #average missing per child
+
+#check correlation prior to imputation
+cormat <- round(cor(mom.cytokine, use="pairwise.complete.obs"),2)
+cormat[lower.tri(cormat)]<- NA
+melted_cormat <- melt(cormat, na.rm = TRUE)
+ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+  geom_tile(color = "white")+
+  scale_fill_gradient2(low = "red", high = "green", mid = "white", 
+                       midpoint = 0, limit = c(-1,1), space = "Lab", 
+                       name="Pearson\nCorrelation") +
+  theme_minimal()+ 
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
+                                   size = 12, hjust = 1),
+        axis.title = element_blank())+
+  coord_fixed()
+#all positively correlated
+
+#impute using kNN
+set.seed(12345)
+missing.model = preProcess(mom.cytokine, "knnImpute")
+mom.impute.Z = predict(missing.model, mom.cytokine); sum(is.na(mom.impute.Z))
+
+#create sum score
+mom.sumscore <- mom.impute.Z %>%
+  mutate(sumscore_t0_mom_Z = rowSums(mom.impute.Z)) %>%
+  select(sumscore_t0_mom_Z)
+
+mom.sumscore <- scale(mom.sumscore, center = TRUE, scale = TRUE)
+
+mom.sumscore <- as.data.frame(cbind(dataid = mom$dataid, mom.sumscore))
+
 ##### export results
-write.csv(pca.results,
-          file = "~/Documents/immune-growth/results/clustering pca.csv")
-
-####### sensitivity analysis - PCA with complete cases
-#year 1
-y1.complete <- y1.exposure[complete.cases(y1.exposure),]
-nrow(y1.complete)
-
-#scale and perform PCA
-y1.complete_scale <- scale(y1.complete, center = FALSE)
-y1.complete.pca <- prcomp(y1.complete_scale)
-y1.complete.loadings <- as.matrix(y1.complete.pca$rotation[,c(1:10)])
-
-loadings.diff.y1 = y1.complete.loadings - y1.loadings
-melted <- melt(loadings.diff.y1)
-
-loaddiff.plot.y1 <- ggplot(data = melted, aes(Var2, Var1, fill = value))+
-  geom_tile(color = "white")+
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0, limit = c(-1,1), space = "Lab", 
-                       name="Difference") +
-  theme_minimal()+ 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
-                                   size = 10, hjust = 1),
-        axis.title = element_blank())
-
-### year 2
-y2.complete <- y2_exposure[complete.cases(y2_exposure),]
-nrow(y2.complete)
-
-#scale and perform PCA
-y2.complete_scale <- scale(y2.complete, center = FALSE)
-y2.complete.pca <- prcomp(y2.complete_scale)
-y2.complete.loadings <- as.matrix(y2.complete.pca$rotation[,c(1:10)])
-
-loadings.diff.y2 = y2.complete.loadings - y2_loadings
-melted <- melt(loadings.diff.y2)
-
-loaddiff.plot.y2 <- ggplot(data = melted, aes(Var2, Var1, fill = value))+
-  geom_tile(color = "white")+
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 0, limit = c(-1,1), space = "Lab", 
-                       name="Difference") +
-  theme_minimal()+ 
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, 
-                                   size = 10, hjust = 1),
-        axis.title = element_blank())
+write.csv(mom.sumscore,
+          file = "~/Documents/immune-growth/results/clustering pca/maternal inflammation sumscore.csv")
