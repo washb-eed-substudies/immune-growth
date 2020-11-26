@@ -4,6 +4,8 @@ source(here::here("0-config.R"))
 source(here::here("src/0-gam-functions.R"))
 
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
+pca_sum_imputed <- read.csv(here('results/clustering PCA/PCA results.csv'))%>%select(-X)
+total_d <- left_join(d, pca_sum_imputed, by='childid')
 
 #Set list of adjustment variables
 #Make vectors of adjustment variable names
@@ -34,7 +36,7 @@ W2_F2.W23_anthro <- c(Wvars, Wvars3, Wvars23) %>% unique(.)
 #### Hypothesis 1: immune status associated with concurrent child growth ####
 # all immune ratios at Y1 v. growth outcomes at Y1
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp")            
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")
 Yvars <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2") 
 
 pick_covariates_H1 <- function(j){
@@ -49,7 +51,7 @@ for(i in Xvars){
     print(i)
     print(j)
     Wset <- pick_covariates_H1(j)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset)
+    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=Wset)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
@@ -57,7 +59,7 @@ for(i in Xvars){
 
 # all immune outcomes at y2 and growth outcomes at y2
 Xvars <- c("t3_ratio_pro_il10", "t3_ratio_il2_il10", "t3_ratio_gmc_il10", "t3_ratio_th1_il10", "t3_ratio_th2_il10",     
-           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17")            
+           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "sumscore_t3_Z")            
 Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
 
 for(i in Xvars){
@@ -65,7 +67,7 @@ for(i in Xvars){
     print(i)
     print(j)
     Wset <- pick_covariates_H1(j)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset)
+    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=Wset)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
@@ -107,7 +109,7 @@ saveRDS(H1_adj_nofever_plot_data, here('figure-data/H1_adj_nofever_spline_data.R
 #### Hypothesis 2: immune status and subsequent growth ####
 # all immune outcomes at y1 v. growth at y2
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp")            
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")            
 Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
 
 
@@ -117,7 +119,7 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_F2.W3_anthro)
+    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W3_anthro)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H2_adj_nofever_models <- bind_rows(H2_adj_nofever_models, res)
   }
@@ -160,14 +162,14 @@ saveRDS(H2_plot_data, here('figure-data/H2_adj_nofever_spline_data.RDS'))
 #### Hypothesis 3: immune status and child growth velocity ####
 # immune ratios at y1 and growth velocity outcomes between y1 and y2
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp")            
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")            
 Yvars <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
 
 #Fit models
 H3_adj_nofever_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_F2.W23_anthro)
+    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W23_anthro)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H3_adj_nofever_models <- bind_rows(H3_adj_nofever_models, res)
   }
@@ -209,7 +211,7 @@ saveRDS(H3_plot_data, here('figure-data/H3_adj_nofever_spline_data.RDS'))
 #### Hypothesis ####
 # immune ratios at y1 v. change in growth outcomes between y1 and y2
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp")            
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")            
 Yvars <- c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3")
 
 #Fit models
@@ -218,7 +220,7 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_F2.W23_anthro)
+    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W23_anthro)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     delta_growth_adj_nofever_models <- bind_rows(delta_growth_adj_nofever_models, res)
   }

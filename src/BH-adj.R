@@ -37,12 +37,12 @@ full_adj_res <- full_adj_res %>% group_by(Y) %>%
   ungroup() %>%
   as.data.frame()
 
-saveRDS(full_res %>% filter(H==1) %>% select(-c(H, BH.Pval)), here("results/unadjusted/H1_res.RDS"))
-saveRDS(full_res %>% filter(H==2) %>% select(-c(H, BH.Pval)), here("results/unadjusted/H2_res.RDS"))
-saveRDS(full_res %>% filter(H==3) %>% select(-c(H, BH.Pval)), here("results/unadjusted/H3_res.RDS"))
-saveRDS(full_res %>% filter(H==4) %>% select(-c(H, BH.Pval)), here("results/unadjusted/delta_growth_res.RDS"))
+saveRDS(full_res %>% filter(H==1) %>% select(-c(H)), here("results/unadjusted/H1_res.RDS"))
+saveRDS(full_res %>% filter(H==2) %>% select(-c(H)), here("results/unadjusted/H2_res.RDS"))
+saveRDS(full_res %>% filter(H==3) %>% select(-c(H)), here("results/unadjusted/H3_res.RDS"))
+saveRDS(full_res %>% filter(H==4) %>% select(-c(H)), here("results/unadjusted/delta_growth_res.RDS"))
 
-saveRDS(full_adj_res %>% filter(H==1) %>% select(-c(H, BH.Pval)), here("results/adjusted/H1_adj_nofever_res.RDS"))
-saveRDS(full_adj_res %>% filter(H==2) %>% select(-c(H, BH.Pval)), here("results/adjusted/H2_adj_nofever_res.RDS"))
-saveRDS(full_adj_res %>% filter(H==3) %>% select(-c(H, BH.Pval)), here("results/adjusted/H3_adj_nofever_res.RDS"))
-saveRDS(full_adj_res %>% filter(H==4) %>% select(-c(H, BH.Pval)), here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
+saveRDS(full_adj_res %>% filter(H==1) %>% select(-c(H)), here("results/adjusted/H1_adj_nofever_res.RDS"))
+saveRDS(full_adj_res %>% filter(H==2) %>% select(-c(H)), here("results/adjusted/H2_adj_nofever_res.RDS"))
+saveRDS(full_adj_res %>% filter(H==3) %>% select(-c(H)), here("results/adjusted/H3_adj_nofever_res.RDS"))
+saveRDS(full_adj_res %>% filter(H==4) %>% select(-c(H)), here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
