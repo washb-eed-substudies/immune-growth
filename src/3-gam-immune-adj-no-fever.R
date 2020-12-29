@@ -52,7 +52,7 @@ for(i in Xvars){
     print(j)
     Wset <- pick_covariates_H1(j)
     res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=Wset)
-    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
 }
@@ -68,7 +68,7 @@ for(i in Xvars){
     print(j)
     Wset <- pick_covariates_H1(j)
     res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=Wset)
-    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
 }
@@ -77,7 +77,7 @@ for(i in Xvars){
 H1_adj_nofever_res <- NULL
 for(i in 1:nrow(H1_adj_nofever_models)){
   res <- data.frame(X=H1_adj_nofever_models$X[i], Y=H1_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=H1_adj_nofever_models$fit[i][[1]], d=H1_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H1_adj_nofever_models$fit[i][[1]], d=H1_adj_nofever_models$dat[i][[1]], H1_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H1_adj_nofever_res <-  bind_rows(H1_adj_nofever_res , preds$res)
 }
 
@@ -120,7 +120,7 @@ for(i in Xvars){
     print(i)
     print(j)
     res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W3_anthro)
-    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H2_adj_nofever_models <- bind_rows(H2_adj_nofever_models, res)
   }
 }
@@ -129,7 +129,7 @@ for(i in Xvars){
 H2_adj_nofever_res <- NULL
 for(i in 1:nrow(H2_adj_nofever_models)){
   res <- data.frame(X=H2_adj_nofever_models$X[i], Y=H2_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=H2_adj_nofever_models$fit[i][[1]], d=H2_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H2_adj_nofever_models$fit[i][[1]], d=H2_adj_nofever_models$dat[i][[1]], H2_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H2_adj_nofever_res <-  bind_rows(H2_adj_nofever_res , preds$res)
 }
 
@@ -170,7 +170,7 @@ H3_adj_nofever_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
     res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W23_anthro)
-    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H3_adj_nofever_models <- bind_rows(H3_adj_nofever_models, res)
   }
 }
@@ -179,7 +179,7 @@ for(i in Xvars){
 H3_adj_nofever_res <- NULL
 for(i in 1:nrow(H3_adj_nofever_models)){
   res <- data.frame(X=H3_adj_nofever_models$X[i], Y=H3_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=H3_adj_nofever_models$fit[i][[1]], d=H3_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H3_adj_nofever_models$fit[i][[1]], d=H3_adj_nofever_models$dat[i][[1]], H3_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H3_adj_nofever_res <-  bind_rows(H3_adj_nofever_res , preds$res)
 }
 
@@ -221,7 +221,7 @@ for(i in Xvars){
     print(i)
     print(j)
     res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W23_anthro)
-    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     delta_growth_adj_nofever_models <- bind_rows(delta_growth_adj_nofever_models, res)
   }
 }
@@ -230,7 +230,7 @@ for(i in Xvars){
 delta_growth_adj_nofever_res <- NULL
 for(i in 1:nrow(delta_growth_adj_nofever_models)){
   res <- data.frame(X=delta_growth_adj_nofever_models$X[i], Y=delta_growth_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=delta_growth_adj_nofever_models$fit[i][[1]], d=delta_growth_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=delta_growth_adj_nofever_models$fit[i][[1]], d=delta_growth_adj_nofever_models$dat[i][[1]], delta_growth_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   delta_growth_adj_nofever_res <-  bind_rows(delta_growth_adj_nofever_res , preds$res)
 }
 
@@ -257,3 +257,4 @@ saveRDS(delta_growth_adj_nofever_res, here("results/adjusted/delta_growth_adj_no
 
 #Save plot data
 saveRDS(delta_growth_adj_nofever_plot_data, here("figure-data/delta_growth_adj_nofever_spline_data.RDS"))
+
