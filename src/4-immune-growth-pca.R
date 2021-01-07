@@ -14,7 +14,8 @@ d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-ana
 #-------------------------Year 1-----------------------------#
 #select immune variables
 y1.var <- select(d, childid, grep("t2_ln", names(d), value=T))
-y1.var <- y1.var[,c(1, 5:17)]
+y1.var <- y1.var[,c(1, 3:17)]
+colnames(y1.var)
 
 ### deal with missingness
 #remove observations with all missing data except childid
@@ -33,13 +34,13 @@ length(which(missing$missing >0)) #number of children with missing data
 mean(missing$missing[missing$missing >0]) #average missing per child w/ missing data
 
 #store ids and flag
-y1.id <- missing[,c(1,16)]
+y1.id <- missing[,c(1,18)]
 #remove ids from PCA dataset
 y1.var <- y1.var[,-1] 
 
 #check correlation prior to imputation
 corrplot <- y1.var
-colnames(corrplot) <- c("GMC", "IFN-g", "IL-10", "IL-12",
+colnames(corrplot) <- c("AGP", "CRP", "GMC", "IFN-g", "IL-10", "IL-12",
                         "IL-13", "IL-17", "IL-1", "IL-2", "IL-21",
                          "IL-4", "IL-5", "IL-6", "TNF-a")
 ggcorr(corrplot, label = TRUE, label_round = 2, label_size = 3)
@@ -68,14 +69,6 @@ biplot(y1.pca)
 #predict out
 y1.pred <- as.data.frame(predict(y1.pca, newdata=y1.impute.Z))
 colnames(y1.pred) <- paste(colnames(y1.pred), "t2", sep = "_")
-
-### create sum score
-y1.sumscore <- y1.impute.Z %>%
-  mutate(sumscore_t2_Z = scale(rowSums(y1.impute.Z), center = TRUE, scale = TRUE)) %>%
-  select(sumscore_t2_Z)
-
-#test correlation with PC1
-cor.test(y1.sumscore$sumscore_t2_Z, y1.pred$PC1_t2)
 
 ### create imputed ratios
 #backtransform imputed variables from Z-scores to log
@@ -108,12 +101,13 @@ y1.cluster_imp <- y1.cluster_imp %>%
          t2_ratio_th2_il10_imp, t2_ratio_th17_il10_imp, t2_ratio_gmc_il10_imp, t2_ratio_il2_il10_imp)
 
 #bind all back to ids
-y1.pc.ids <- as.data.frame(cbind(y1.id, y1.cluster_imp, y1.sumscore, y1.pred[,1:10]))
+y1.pc.ids <- as.data.frame(cbind(y1.id, y1.cluster_imp, y1.pred[,1:10]))
 
 #-------------------------Year 2-----------------------------#
-#select PCA variables
+#select year 2 immune variables
 y2.var <- select(d, childid, grep("t3_ln", names(d), value=T))
 y2.var <- y2.var[,c(1, 3:15)]
+colnames(y2.var)
 
 ### deal with missingness
 #remove observations with all missing data except childid
@@ -166,14 +160,6 @@ biplot(y2.pca)
 y2.pred <- as.data.frame(predict(y2.pca, newdata=y2.impute.Z))
 colnames(y2.pred) <- paste(colnames(y2.pred), "t3", sep = "_")
 
-### create sum score
-y2.sumscore <- y2.impute.Z %>%
-  mutate(sumscore_t3_Z = scale(rowSums(y2.impute.Z), center = TRUE, scale = TRUE)) %>%
-  select(sumscore_t3_Z)
-
-#test correlation with PC1
-cor(y2.sumscore$sumscore_t3_Z, y2.pred$PC1_t3)
-
 ### create imputed ratios
 #backtransform imputed variables from Z-scores
 y2.impute <- sweep(y2.impute.Z, MARGIN=2, y2.sd, `*`)
@@ -205,7 +191,7 @@ y2.cluster_imp <- y2.cluster_imp %>%
          t3_ratio_th2_il10_imp, t3_ratio_th17_il10_imp, t3_ratio_gmc_il10_imp, t3_ratio_il2_il10_imp)
 
 #bind back to ids
-y2.pc.ids <- as.data.frame(cbind(y2.id, y2.cluster_imp, y2.sumscore, y2.pred[,1:10]))
+y2.pc.ids <- as.data.frame(cbind(y2.id, y2.cluster_imp, y2.pred[,1:10]))
 
 ##### merge year 1 and year 2
 pca.results <- merge(y1.pc.ids, y2.pc.ids, all = TRUE)
@@ -279,16 +265,6 @@ ggplot(data = long) +
   geom_density(aes(x = value))+
   facet_wrap(~PC)
 
-#plot sum score
-ggplot(data = y1.pc.ids) +
-  geom_density(aes(x = sumscore_t2_Z))+
-  labs(x = "Sum Score (Year 1)")
-
-ggplot(data = y1.pc.ids, aes(x = sumscore_t2_Z, y = PC1_t2)) +
-  geom_point()+
-  labs(x = "Sum Score (Year 1)", y = "PC1 (Year 1)")+
-  ylim(-9,6.25)
-
 #Year 2
 #visualize PC loadings
 y2.loadings <- as.matrix(y2.pca$rotation[,c(1:10)])
@@ -334,14 +310,4 @@ long$PC <- factor(long$PC, levels = c("PC1_t3","PC2_t3","PC3_t3","PC4_t3","PC5_t
 ggplot(data = long) +
   geom_density(aes(x = value))+
   facet_wrap(~PC)
-
-#plot sum score
-ggplot(data = y2.pc.ids) +
-  geom_density(aes(x = sumscore_t3_Z))+
-  labs(x = "Sum Score (Year 2)")
-
-ggplot(data = y2.pc.ids, aes(x = sumscore_t3_Z, y = PC1_t3)) +
-  geom_point()+
-  labs(x = "Sum Score (Year 2)", y = "PC1 (Year 2)")+
-  ylim(-9,6.25)
 
