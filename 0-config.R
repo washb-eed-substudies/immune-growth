@@ -20,6 +20,10 @@ library(here)
 library(cowplot)
 library(mgcv)
 #library(psych)
+if(!require(faraway)){
+  install.packages("faraway") 
+  library(faraway)
+}
 if(!require(washbgam)){
   devtools::install_github("washb-eed-substudies/washbgam")
   library(washbgam)
