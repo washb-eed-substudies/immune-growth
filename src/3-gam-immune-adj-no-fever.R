@@ -1,16 +1,16 @@
 rm(list=ls())
 
 source(here::here("0-config.R"))
-source(here::here("src/0-gam-functions.R"))
+#source(here::here("src/0-gam-functions.R"))
 
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
-pca_sum_imputed <- read.csv(here('results/clustering PCA/PCA results.csv'))%>%select(-X)
-total_d <- left_join(d, pca_sum_imputed, by='childid')
 
 #Set list of adjustment variables
 #Make vectors of adjustment variable names
 Wvars<-c("sex","birthord", "momage","momheight","momedu", 
-         "hfiacat", "Nlt18","Ncomp", "watmin", "walls", "floor", "roof", "HHwealth_quart", "n_cattle", "n_goat", "n_chicken")
+         "hfiacat", "Nlt18","Ncomp", "watmin", "walls", 
+         "floor", "roof", "HHwealth", "tr", "cesd_sum_t2", 
+         "ari7d_t2", "diar7d_t2", "nose7d_t2", "life_viol_any_t3")
 
 Wvars[!(Wvars %in% colnames(d))]
 
@@ -20,16 +20,26 @@ Wvars[!(Wvars %in% colnames(d))]
 
 #NOTES
 #Does monsoon_ut2 need to be replaced with monsoon_ht2 for growth measures? (and agemth_ut2 with agedays_ht2?)
-Wvars2<-c("monsoon_at2", "ageday_at2", "tr", "cesd_sum_t2", "ari7d_t2", "diar7d_t2", "nose7d_t2") 
-Wvars3<-c("laz_t2", "waz_t2", "monsoon_at2", "monsoon_at3", "ageday_at2", "ageday_at3", "tr",
-          "cesd_sum_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", "life_viol_any_t3", 
-          "ari7d_t2", "ari7d_t3", "diar7d_t2", "diar7d_t3", "nose7d_t2", "nose7d_t3") 
-Wvars23<-c("anthro_days_btwn_t2_t3")
+Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2") 
+Wvars3<-c("ageday_bt3", "ageday_at3", "month_bt3", "month_at3", 
+          "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+          "ari7d_t3", "diar7d_t3", "nose7d_t3") 
+Wvars23<-c("ageday_bt2", "ageday_at3", "month_bt2", "month_at3", 
+           "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+           "ari7d_t3", "diar7d_t3", "nose7d_t3")
+Wvars_anthro23<-c("ageday_bt2", "ageday_at2", "ageday_at3", "month_bt2", "month_at2", "month_at3", 
+                  "cesd_sum_ee_t3", "pss_sum_mom_t3", "ari7d_t3", "diar7d_t3", "nose7d_t3")
 
-W2_F2.W2_anthro <- c(Wvars, Wvars2) %>% unique(.)
-W2_F2.W3_anthro <- c(Wvars, Wvars3) %>% unique(.)
-W2_F2.W23_anthro <- c(Wvars, Wvars3, Wvars23) %>% unique(.)
+W2_immmune.W2_anthro <- c(Wvars, Wvars2) %>% unique(.)
+W3_immune.W3_anthro <- c(Wvars, Wvars3) %>% unique(.)
+W2_immune.W3_anthro <- c(Wvars, Wvars23) %>% unique(.)
+W2_immune.W23_anthro <- c(Wvars, Wvars_anthro23) %>% unique(.)
 
+add_hcz <- function(j, W){
+  if (j=="hcz_t3"){Wset=c(W, "hcz_t2")}
+  else {Wset=W}
+  return(Wset)
+}
 
 #Loop over exposure-outcome pairs
 
@@ -39,20 +49,15 @@ Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ra
            "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")
 Yvars <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2") 
 
-pick_covariates_H1 <- function(j){
-  if(grepl("_t2", j)){Wset = W2_F2.W2_anthro}
-  if(grepl("_t3", j)){Wset = W2_F2.W3_anthro}
-  return(Wset)
-}
 #Fit models
 H1_adj_nofever_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    Wset <- pick_covariates_H1(j)
-    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=Wset)
-    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    Wset <- W2_immmune.W2_anthro
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset, forcedW=c("ageday_bt2", "ageday_at2"))
+    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
 }
@@ -66,9 +71,9 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    Wset <- pick_covariates_H1(j)
-    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=Wset)
-    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    Wset <- add_hcz(j, W3_immune.W3_anthro)
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset, forcedW=c("ageday_bt3", "ageday_at3"))
+    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
 }
@@ -77,7 +82,7 @@ for(i in Xvars){
 H1_adj_nofever_res <- NULL
 for(i in 1:nrow(H1_adj_nofever_models)){
   res <- data.frame(X=H1_adj_nofever_models$X[i], Y=H1_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=H1_adj_nofever_models$fit[i][[1]], d=H1_adj_nofever_models$dat[i][[1]], H1_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H1_adj_nofever_models$fit[i][[1]], d=H1_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H1_adj_nofever_res <-  bind_rows(H1_adj_nofever_res , preds$res)
 }
 
@@ -119,8 +124,9 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W3_anthro)
-    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    Wset <- add_hcz(j, W2_immune.W3_anthro)
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset, forcedW=c("ageday_bt2", "ageday_at3"))
+    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H2_adj_nofever_models <- bind_rows(H2_adj_nofever_models, res)
   }
 }
@@ -129,7 +135,7 @@ for(i in Xvars){
 H2_adj_nofever_res <- NULL
 for(i in 1:nrow(H2_adj_nofever_models)){
   res <- data.frame(X=H2_adj_nofever_models$X[i], Y=H2_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=H2_adj_nofever_models$fit[i][[1]], d=H2_adj_nofever_models$dat[i][[1]], H2_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H2_adj_nofever_models$fit[i][[1]], d=H2_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H2_adj_nofever_res <-  bind_rows(H2_adj_nofever_res , preds$res)
 }
 
@@ -169,8 +175,10 @@ Yvars <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
 H3_adj_nofever_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
-    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W23_anthro)
-    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    print(i)
+    print(j)
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_immune.W23_anthro, forcedW=c("ageday_bt2", "ageday_at2", "ageday_at3"))
+    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H3_adj_nofever_models <- bind_rows(H3_adj_nofever_models, res)
   }
 }
@@ -179,7 +187,7 @@ for(i in Xvars){
 H3_adj_nofever_res <- NULL
 for(i in 1:nrow(H3_adj_nofever_models)){
   res <- data.frame(X=H3_adj_nofever_models$X[i], Y=H3_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=H3_adj_nofever_models$fit[i][[1]], d=H3_adj_nofever_models$dat[i][[1]], H3_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H3_adj_nofever_models$fit[i][[1]], d=H3_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H3_adj_nofever_res <-  bind_rows(H3_adj_nofever_res , preds$res)
 }
 
@@ -220,8 +228,8 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    res_adj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=W2_F2.W23_anthro)
-    res <- data.frame(X=i, Y=j, N=res_adj$n, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_immune.W23_anthro, forcedW=c("ageday_bt2", "ageday_at2", "ageday_at3"))
+    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     delta_growth_adj_nofever_models <- bind_rows(delta_growth_adj_nofever_models, res)
   }
 }
@@ -230,7 +238,7 @@ for(i in Xvars){
 delta_growth_adj_nofever_res <- NULL
 for(i in 1:nrow(delta_growth_adj_nofever_models)){
   res <- data.frame(X=delta_growth_adj_nofever_models$X[i], Y=delta_growth_adj_nofever_models$Y[i])
-  preds <- predict_gam_diff(fit=delta_growth_adj_nofever_models$fit[i][[1]], d=delta_growth_adj_nofever_models$dat[i][[1]], delta_growth_adj_nofever_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=delta_growth_adj_nofever_models$fit[i][[1]], d=delta_growth_adj_nofever_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   delta_growth_adj_nofever_res <-  bind_rows(delta_growth_adj_nofever_res , preds$res)
 }
 

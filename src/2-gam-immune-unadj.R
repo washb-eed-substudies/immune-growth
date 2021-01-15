@@ -5,16 +5,14 @@ source(here::here("0-config.R"))
 #source(here::here("src/0-gam-functions.R"))
 
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
-pca_sum_imputed <- read.csv(here('results/clustering PCA/PCA results.csv')) %>% select(-X)
-total_d <- left_join(d, pca_sum_imputed, by='childid')
 
 #Example:
 
 #Fit GAM model with random effects for childid
-res_unadj <- fit_RE_gam(d=total_d, X="t3_ratio_pro_il10", Y="laz_t3",  W=NULL)
+res_unadj <- fit_RE_gam(d=d, X="t3_ratio_pro_il10", Y="laz_t3",  W=NULL)
 
 #Get predictions of differences from the 25th percentile of exposure
-preds_unadj <- predict_gam_diff(fit=res_unadj$fit, d=res_unadj$dat, n=res_unadj$n, quantile_diff=c(0.25,0.75), Xvar="t3_cort_z01", Yvar="laz_t3")
+preds_unadj <- predict_gam_diff(fit=res_unadj$fit, d=res_unadj$dat, quantile_diff=c(0.25,0.75), Xvar="t3_cort_z01", Yvar="laz_t3")
 
 
 #Primary parameter we are estimating: difference between 25th and 75th percentile of the exposure
@@ -42,8 +40,8 @@ Yvars <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2")
 H1_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
-    res_unadj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=NULL)
-    res <- data.frame(X=i, Y=j, N=res_unadj$n, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
+    res_unadj <- fit_RE_gam(d=d, X=i, Y=j,  W=NULL)
+    res <- data.frame(X=i, Y=j, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
     H1_models <- bind_rows(H1_models, res)
   }
 }
@@ -56,8 +54,8 @@ Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3")
 #Fit models
 for(i in Xvars){
   for(j in Yvars){
-    res_unadj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=NULL)
-    res <- data.frame(X=i, Y=j, N=res_unadj$n, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
+    res_unadj <- fit_RE_gam(d=d, X=i, Y=j,  W=NULL)
+    res <- data.frame(X=i, Y=j, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
     H1_models <- bind_rows(H1_models, res)
   }
 }
@@ -66,7 +64,7 @@ for(i in Xvars){
 H1_res <- NULL
 for(i in 1:nrow(H1_models)){
   res <- data.frame(X=H1_models$X[i], Y=H1_models$Y[i])
-  preds <- predict_gam_diff(fit=H1_models$fit[i][[1]], d=H1_models$dat[i][[1]], H1_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H1_models$fit[i][[1]], d=H1_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H1_res <-  bind_rows(H1_res , preds$res)
 }
 
@@ -106,8 +104,8 @@ Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3")
 H2_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
-    res_unadj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=NULL)
-    res <- data.frame(X=i, Y=j, N=res_unadj$n, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
+    res_unadj <- fit_RE_gam(d=d, X=i, Y=j,  W=NULL)
+    res <- data.frame(X=i, Y=j, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
     H2_models <- bind_rows(H2_models, res)
   }
 }
@@ -116,7 +114,7 @@ for(i in Xvars){
 H2_res <- NULL
 for(i in 1:nrow(H2_models)){
   res <- data.frame(X=H2_models$X[i], Y=H2_models$Y[i])
-  preds <- predict_gam_diff(fit=H2_models$fit[i][[1]], d=H2_models$dat[i][[1]], H2_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H2_models$fit[i][[1]], d=H2_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H2_res <-  bind_rows(H2_res , preds$res)
 }
 
@@ -156,8 +154,8 @@ Yvars <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
 H3_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
-    res_unadj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=NULL)
-    res <- data.frame(X=i, Y=j, N=res_unadj$n, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
+    res_unadj <- fit_RE_gam(d=d, X=i, Y=j,  W=NULL)
+    res <- data.frame(X=i, Y=j, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
     H3_models <- bind_rows(H3_models, res)
   }
 }
@@ -166,7 +164,7 @@ for(i in Xvars){
 H3_res <- NULL
 for(i in 1:nrow(H3_models)){
   res <- data.frame(X=H3_models$X[i], Y=H3_models$Y[i])
-  preds <- predict_gam_diff(fit=H3_models$fit[i][[1]], d=H3_models$dat[i][[1]], H3_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=H3_models$fit[i][[1]], d=H3_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   H3_res <-  bind_rows(H3_res , preds$res)
 }
 
@@ -205,8 +203,8 @@ Yvars <- c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t
 delta_growth_models <- NULL
 for(i in Xvars){
   for(j in Yvars){
-    res_unadj <- fit_RE_gam(d=total_d, X=i, Y=j,  W=NULL)
-    res <- data.frame(X=i, Y=j, N=res_unadj$n, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
+    res_unadj <- fit_RE_gam(d=d, X=i, Y=j,  W=NULL)
+    res <- data.frame(X=i, Y=j, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
     delta_growth_models <- bind_rows(delta_growth_models, res)
   }
 }
@@ -215,7 +213,7 @@ for(i in Xvars){
 delta_growth_res <- NULL
 for(i in 1:nrow(delta_growth_models)){
   res <- data.frame(X=delta_growth_models$X[i], Y=delta_growth_models$Y[i])
-  preds <- predict_gam_diff(fit=delta_growth_models$fit[i][[1]], d=delta_growth_models$dat[i][[1]], delta_growth_models$N[i], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- predict_gam_diff(fit=delta_growth_models$fit[i][[1]], d=delta_growth_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
   delta_growth_res <-  bind_rows(delta_growth_res , preds$res)
 }
 
