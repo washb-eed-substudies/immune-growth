@@ -50,7 +50,9 @@ y1.impute.Z = predict(missing.model, y1.var); sum(is.na(y1.impute.Z))
 ### create sum score
 y1.sumscore <- y1.impute.Z %>%
   mutate(sumscore_t2_Z = scale(rowSums(y1.impute.Z), center = TRUE, scale = TRUE)) %>%
-  select(sumscore_t2_Z)
+  mutate(sumscore_t2_noil2il21_Z = t2_ln_gmc + t2_ln_ifn + t2_ln_il10 + t2_ln_il12 + t2_ln_il13 + t2_ln_il17 + t2_ln_il1 + t2_ln_il4 + t2_ln_il5 + t2_ln_il6 + t2_ln_tnf) %>%
+  mutate(sumscore_t2_noil2il21_Z = scale(sumscore_t2_noil2il21_Z, center = TRUE, scale = TRUE))%>%
+  select(sumscore_t2_Z, sumscore_t2_noil2il21_Z)
 
 y1.scoreid <- as.data.frame(cbind(childid = y1.id, y1.sumscore))
 
@@ -93,7 +95,9 @@ y2.impute.Z = predict(missing.model, y2.var); sum(is.na(y2.impute.Z))
 ### create sum score
 y2.sumscore <- y2.impute.Z %>%
   mutate(sumscore_t3_Z = scale(rowSums(y2.impute.Z), center = TRUE, scale = TRUE)) %>%
-  select(sumscore_t3_Z)
+  mutate(sumscore_t3_noil2il21_Z = t3_ln_gmc + t3_ln_ifn + t3_ln_il10 + t3_ln_il12 + t3_ln_il13 + t3_ln_il17 + t3_ln_il1 + t3_ln_il4 + t3_ln_il5 + t3_ln_il6 + t3_ln_tnf) %>%
+  mutate(sumscore_t3_noil2il21_Z = scale(sumscore_t3_noil2il21_Z, center = TRUE, scale = TRUE))%>%
+  select(sumscore_t3_Z, sumscore_t3_noil2il21_Z)
 
 y2.scoreid <- as.data.frame(cbind(childid = y2.id, y2.sumscore))
 
@@ -105,6 +109,6 @@ sumscores <- merge(y1.scoreid, y2.scoreid, all = TRUE)
 d$childid[!(d$childid %in% sumscores$childid)]
 
 write.csv(sumscores,
-          file = "~/Documents/immune-growth/results/child sum score/child immune sum scores.csv")
+          file = "~/Documents/repos/immune-growth/results/child sum score/child immune sum scores.csv")
 
 
