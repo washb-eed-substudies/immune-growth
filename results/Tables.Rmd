@@ -1,13 +1,13 @@
 ---
 title: "Immune status and growth tables"
 output:
-  word_document:
-    toc_depth: '7'
-  pdf_document:
-    toc_depth: '7'
   html_document:
     fig_width: 8
     toc_depth: 7
+  pdf_document:
+    toc_depth: '7'
+  word_document:
+    toc_depth: '7'
 ---
 
 ```{r include=FALSE}
