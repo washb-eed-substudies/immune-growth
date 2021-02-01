@@ -15,19 +15,19 @@ Wvars<-c("sex","birthord", "momage","momheight","momedu",
 
 Wvars[!(Wvars %in% colnames(d))]
 
-# #test new package
-X="t3_ratio_pro_il10"
-Y="laz_t3"
-d$momheight2 <- d$momheight+0.01
-d$hfiacat2 <- d$hfiacat
-W=c(Wvars, "ageday_at1", "ageday_at2", "momheight2","hfiacat2")
-forcedW=W[grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)]
-V=NULL
-id="clusterid"
-family = "gaussian"
-pval = 0.2
-print=TRUE
-res_adj <- fit_RE_gam(d=d, X="t3_ratio_pro_il10", Y="laz_t3",  W=c(Wvars, "ageday_at1", "ageday_at2", "momheight2","hfiacat2"))
+# # #test new package
+# X="t3_ratio_pro_il10"
+# Y="laz_t3"
+# d$momheight2 <- d$momheight+0.01
+# d$hfiacat2 <- d$hfiacat
+# W=c("birthord", "momage","momheight","momedu", "ageday_at1", "ageday_at2", "momheight2","hfiacat2")
+# forcedW=W[grepl("age_", W)|grepl("agedays_", W)|grepl("ageday_", W)]
+# V="sex"
+# id="clusterid"
+# family = "gaussian"
+# pval = 0.2
+# print=TRUE
+# res_adj <- fit_RE_gam(d=d, X="t3_ratio_pro_il10", Y="laz_t3",  W=c(Wvars, "ageday_at1", "ageday_at2", "momheight2","hfiacat2"), V="sex")
 
 
 #Add in time varying covariates:
