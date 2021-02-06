@@ -7,9 +7,10 @@ d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-ana
 
 #Set list of adjustment variables
 #Make vectors of adjustment variable names
+#removed roof because of low variability
 Wvars<-c("sex","birthord", "momage","momheight","momedu", 
          "hfiacat", "Nlt18","Ncomp", "watmin", "walls", 
-         "floor", "roof", "HHwealth", "tr", "cesd_sum_t2", 
+         "floor", "HHwealth", "tr", "cesd_sum_t2", 
          "ari7d_t2", "diar7d_t2", "nose7d_t2", "life_viol_any_t3")
 
 Wvars[!(Wvars %in% colnames(d))]
@@ -17,9 +18,6 @@ Wvars[!(Wvars %in% colnames(d))]
 
 
 #Add in time varying covariates:
-
-#NOTES
-#Does monsoon_ut2 need to be replaced with monsoon_ht2 for growth measures? (and agemth_ut2 with agedays_ht2?)
 Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2") 
 Wvars3<-c("ageday_bt3", "ageday_at3", "month_bt3", "month_at3", 
           "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
@@ -46,7 +44,7 @@ add_hcz <- function(j, W){
 #### Hypothesis 1: immune status associated with concurrent child growth ####
 # all immune ratios at Y1 v. growth outcomes at Y1
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")
 Yvars <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2") 
 
 #Fit models
@@ -64,7 +62,7 @@ for(i in Xvars){
 
 # all immune outcomes at y2 and growth outcomes at y2
 Xvars <- c("t3_ratio_pro_il10", "t3_ratio_il2_il10", "t3_ratio_gmc_il10", "t3_ratio_th1_il10", "t3_ratio_th2_il10",     
-           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "sumscore_t3_Z")            
+           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "sumscore_t3_Z", "t3_ln_ifn")            
 Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
 
 for(i in Xvars){
@@ -114,7 +112,7 @@ saveRDS(H1_adj_nofever_plot_data, here('figure-data/H1_adj_nofever_spline_data.R
 #### Hypothesis 2: immune status and subsequent growth ####
 # all immune outcomes at y1 v. growth at y2
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")            
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")            
 Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
 
 
@@ -168,7 +166,7 @@ saveRDS(H2_plot_data, here('figure-data/H2_adj_nofever_spline_data.RDS'))
 #### Hypothesis 3: immune status and child growth velocity ####
 # immune ratios at y1 and growth velocity outcomes between y1 and y2
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")            
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")            
 Yvars <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
 
 #Fit models
@@ -219,7 +217,7 @@ saveRDS(H3_plot_data, here('figure-data/H3_adj_nofever_spline_data.RDS'))
 #### Hypothesis ####
 # immune ratios at y1 v. change in growth outcomes between y1 and y2
 Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z")            
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")            
 Yvars <- c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3")
 
 #Fit models

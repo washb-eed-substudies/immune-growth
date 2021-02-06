@@ -188,8 +188,143 @@ ggplot(d, aes(x=d23_ratio_th1_th2)) + geom_density()
 ggplot(d, aes(x=d23_ratio_th1_th17)) + geom_density()
 
 
+# add sum score
+sum_score <- read.csv(here('results/child sum score/child immune sum scores.csv')) %>% select(-X)
+sum_score_d <- left_join(d, sum_score, by='childid')
 
-saveRDS(d, paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
+
+# add hhwealth
+d_hhwealth <- read.csv("C:/Users/Sophia/Documents/ee-secondary/sophia scripts/hhwealth.csv")
+dfull <- left_join(sum_score_d, d_hhwealth, by="dataid")
+
+
+# check covariate missingness
+Wvars<-c("sex","birthord", "momage","momheight","momedu", 
+                  "hfiacat", "Nlt18","Ncomp", "watmin", "walls", 
+                  "floor", "HHwealth", "tr", "cesd_sum_t2", 
+                  "ari7d_t2", "diar7d_t2", "nose7d_t2", "life_viol_any_t3")
+
+#Add in time varying covariates:
+Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2") 
+Wvars3<-c("ageday_bt3", "ageday_at3", "month_bt3", "month_at3", 
+          "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+          "ari7d_t3", "diar7d_t3", "nose7d_t3") 
+Wvars23<-c("ageday_bt2", "ageday_at3", "month_bt2", "month_at3", 
+           "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+           "ari7d_t3", "diar7d_t3", "nose7d_t3")
+Wvars_anthro23<-c("ageday_bt2", "ageday_at2", "ageday_at3", "month_bt2", "month_at2", "month_at3", 
+                  "cesd_sum_ee_t3", "pss_sum_mom_t3", "ari7d_t3", "diar7d_t3", "nose7d_t3")
+
+W2_immmune.W2_anthro <- c(Wvars, Wvars2) %>% unique(.)
+W3_immune.W3_anthro <- c(Wvars, Wvars3) %>% unique(.)
+W2_immune.W3_anthro <- c(Wvars, Wvars23) %>% unique(.)
+W2_immune.W23_anthro <- c(Wvars, Wvars_anthro23) %>% unique(.)
+
+add_hcz <- function(j, W){
+  if (j=="hcz_t3"){Wset=c(W, "hcz_t2")}
+  else {Wset=W}
+  return(Wset)
+}
+
+generate_miss_tbl <- function(Wvars, d){
+  W <- d %>% select(all_of(Wvars))  
+  miss <- data.frame(name = names(W), missing = colSums(is.na(W))/nrow(W), row.names = c(1:ncol(W)))
+  for (i in 1:nrow(miss)) {
+    miss$class[i] <- class(W[,which(colnames(W) == miss[i, 1])])
+  }
+  miss 
+}
+
+generate_miss_tbl(Wvars, dfull)
+
+# add missingness category to IPV covariate
+dfull$life_viol_any_t3<-as.factor(dfull$life_viol_any_t3)
+summary(dfull$life_viol_any_t3)
+dfull$life_viol_any_t3<-addNA(dfull$life_viol_any_t3)
+levels(dfull$life_viol_any_t3)[length(levels(dfull$life_viol_any_t3))]<-"Missing"
+summary(dfull$life_viol_any_t3)
+
+# add missingness category to caregiver report covariates
+summary(dfull$diar7d_t2)
+dfull$diar7d_t2<-as.factor(dfull$diar7d_t2)
+dfull$diar7d_t2<-addNA(dfull$diar7d_t2)
+levels(dfull$diar7d_t2)[length(levels(dfull$diar7d_t2))]<-"Missing"
+summary(dfull$diar7d_t2)
+
+summary(dfull$ari7d_t2)
+dfull$ari7d_t2<-as.factor(dfull$ari7d_t2)
+dfull$ari7d_t2<-addNA(dfull$ari7d_t2)
+levels(dfull$ari7d_t2)[length(levels(dfull$ari7d_t2))]<-"Missing"
+summary(dfull$ari7d_t2)
+
+summary(dfull$nose7d_t2)
+dfull$nose7d_t2<-as.factor(dfull$nose7d_t2)
+dfull$nose7d_t2<-addNA(dfull$nose7d_t2)
+levels(dfull$nose7d_t2)[length(levels(dfull$nose7d_t2))]<-"Missing"
+summary(dfull$nose7d_t2)
+
+generate_miss_tbl(Wvars, dfull)
+
+Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")         
+Yvars <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2")
+
+for (i in Xvars){
+  for (j in Yvars){
+    print(i)
+    print(j)
+    Wvars = W2_immmune.W2_anthro
+    d_sub <- subset(dfull, !is.na(dfull[,i]) & !is.na(dfull[,j]))
+    print(generate_miss_tbl(Wvars, d_sub))
+  }
+}
+
+Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")         
+Yvars <- c("laz_t3", "waz_t3", "whz_t3", "hcz_t3")
+
+for (i in Xvars){
+  for (j in Yvars){
+    print(i)
+    print(j)
+    Wvars = add_hcz(j, W2_immune.W3_anthro)
+    d_sub <- subset(dfull, !is.na(dfull[,i]) & !is.na(dfull[,j]))
+    print(generate_miss_tbl(Wvars, d_sub))
+  }
+}
+
+Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
+           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")         
+Yvars <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
+
+for (i in Xvars){
+  for (j in Yvars){
+    print(i)
+    print(j)
+    Wvars = W2_immune.W23_anthro
+    d_sub <- subset(dfull, !is.na(dfull[,i]) & !is.na(dfull[,j]))
+    print(generate_miss_tbl(Wvars, d_sub))
+  }
+}
+
+Xvars <- c("t3_ratio_pro_il10", "t3_ratio_il2_il10", "t3_ratio_gmc_il10", "t3_ratio_th1_il10", "t3_ratio_th2_il10",     
+           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "sumscore_t3_Z", "t3_ln_ifn")            
+Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
+
+
+for (i in Xvars){
+  for (j in Yvars){
+    print(i)
+    print(j)
+    Wvars = add_hcz(j, W3_immune.W3_anthro)
+    d_sub <- subset(dfull, !is.na(dfull[,i]) & !is.na(dfull[,j]))
+    print(generate_miss_tbl(Wvars, d_sub))
+  }
+}
+
+
+
+saveRDS(d_full, paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
 
 
 
