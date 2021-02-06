@@ -63,7 +63,7 @@ t1 <- data.frame(year = c(rep(1, 44), rep(2, 36)),
                  adj.diff = paste(round(table1.adj$point.diff, 3), " (", 
                                     round(table1.adj$lb.diff, 3), ", ",
                                     round(table1.adj$ub.diff, 3), ")", sep = ""),
-                 p.value = round(table1.adj$Pval, 3))
+                 p.value = round(table1.adj$corrected.Pval, 3))
 
 LAZ.t1 <- t1 %>%
   dplyr::filter(outcome == "LAZ") %>%
@@ -115,7 +115,7 @@ t2 <- data.frame(outcome = rep(c("LAZ", "WAZ", "WLZ", "HCZ"), 11),
                  adj.diff = paste(round(table2.adj$point.diff, 3), " (", 
                                     round(table2.adj$lb.diff, 3), ", ",
                                     round(table2.adj$ub.diff, 3), ")", sep = ""),
-                 p.value = round(table2.adj$Pval, 3))
+                 p.value = round(table2.adj$corrected.Pval, 3))
 
 LAZ.t2 <- t2 %>%
   dplyr::filter(outcome == "LAZ") %>%
@@ -168,7 +168,7 @@ t3 <- data.frame(outcome = rep(c("Length velocity", "Weight velocity",
                  adj.diff = paste(round(table3.adj$point.diff, 3), " (", 
                                     round(table3.adj$lb.diff, 3), ", ",
                                     round(table3.adj$ub.diff, 3), ")", sep = ""),
-                 p.value = round(table3.adj$Pval, 3))
+                 p.value = round(table3.adj$corrected.Pval, 3))
 
 length.t3 <- t3 %>%
   dplyr::filter(outcome == "Length velocity") %>%
@@ -214,7 +214,7 @@ t4 <- data.frame(outcome = rep(c("dLAZ", "dWAZ", "dWLZ", "dHCZ"), 11),
                  adj.diff = paste(round(table4.adj$point.diff, 3), " (", 
                                     round(table4.adj$lb.diff, 3), ", ",
                                     round(table4.adj$ub.diff, 3), ")", sep = ""),
-                 p.value = round(table4.adj$Pval, 3))
+                 p.value = round(table4.adj$corrected.Pval, 3))
 
 LAZ.t4 <- t4 %>%
   dplyr::filter(outcome == "dLAZ") %>%
@@ -444,12 +444,12 @@ t2.sig <- t2 %>%
   mutate(year = "", time = "Subsequent") %>%
   select(time, year, exposure, outcome, n, adj.diff, p.value)
 
-t3.sig <- t1 %>%
+t3.sig <- t3 %>%
   filter(p.value <= 0.05) %>%
   mutate(year = "", time = "Velocity") %>%
   select(time, year, exposure, outcome, n, adj.diff, p.value)
 
-t4.sig <- t1 %>%
+t4.sig <- t4 %>%
   filter(p.value <= 0.05) %>%
   mutate(year = "", time = "Delta") %>%
   select(time, year, exposure, outcome, n, adj.diff, p.value)

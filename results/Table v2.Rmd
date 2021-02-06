@@ -1,0 +1,94 @@
+---
+title: "Immune-growth results"
+date: "2/2/2021"
+output: html_document
+---
+
+```{r, include=FALSE}
+rm(list=ls())
+source(here::here("0-config.R"))
+
+#import tables
+table1 <- readRDS(here("results/unadjusted/H1_res.RDS"))
+table1.adj <- readRDS(here("results/adjusted/H1_adj_nofever_res.RDS"))
+
+table1 <- table1 %>%
+  select(X, Y, q1, q3, pred.q1, pred.q3, point.diff, lb.diff, ub.diff)
+
+table1.adj <- table1.adj %>%
+  select(X, Y, N, pred.q1, pred.q3, point.diff, lb.diff, ub.diff, Pval, corrected.Pval)
+
+table1.total <- merge(table1, table1.adj, by = c("X", "Y"))
+
+table1.total <- table1.total %>%
+  select("X", "Y","N", "q1", "q3","pred.q1.x", "pred.q3.x", "point.diff.x",
+         "lb.diff.x", "ub.diff.x", "pred.q1.y", "pred.q3.y", "point.diff.y", 
+         "lb.diff.y", "ub.diff.y", "Pval", "corrected.Pval")
+
+table2 <- readRDS(here("results/unadjusted/H2_res.RDS"))
+table2.adj <- readRDS(here("results/adjusted/H2_adj_nofever_res.RDS"))
+
+table2 <- table2 %>%
+  select(X, Y, q1, q3, pred.q1, pred.q3, point.diff, lb.diff, ub.diff)
+
+table2.adj <- table2.adj %>%
+  select(X, Y, N, pred.q1, pred.q3, point.diff, lb.diff, ub.diff, Pval, corrected.Pval)
+
+table2.total <- merge(table2, table2.adj, by = c("X", "Y"))
+
+table2.total <- table2.total %>%
+  select("X", "Y","N", "q1", "q3","pred.q1.x", "pred.q3.x", "point.diff.x",
+         "lb.diff.x", "ub.diff.x", "pred.q1.y", "pred.q3.y", "point.diff.y", 
+         "lb.diff.y", "ub.diff.y", "Pval", "corrected.Pval")
+
+table3 <- readRDS(here("results/unadjusted/H3_res.RDS"))
+table3.adj <- readRDS(here("results/adjusted/H3_adj_nofever_res.RDS"))
+
+table3 <- table3 %>%
+  select(X, Y, q1, q3, pred.q1, pred.q3, point.diff, lb.diff, ub.diff)
+
+table3.adj <- table3.adj %>%
+  select(X, Y, N, pred.q1, pred.q3, point.diff, lb.diff, ub.diff, Pval, corrected.Pval)
+
+table3.total <- merge(table3, table3.adj, by = c("X", "Y"))
+
+table3.total <- table3.total %>%
+  select("X", "Y","N", "q1", "q3","pred.q1.x", "pred.q3.x", "point.diff.x",
+         "lb.diff.x", "ub.diff.x", "pred.q1.y", "pred.q3.y", "point.diff.y", 
+         "lb.diff.y", "ub.diff.y", "Pval", "corrected.Pval")
+
+table4 <- readRDS(here("results/unadjusted/delta_growth_res.RDS"))
+table4.adj <- readRDS(here("results/adjusted/delta_growth_adj_nofever_res.RDS"))
+
+table4 <- table4 %>%
+  select(X, Y, q1, q3, pred.q1, pred.q3, point.diff, lb.diff, ub.diff)
+
+table4.adj <- table4.adj %>%
+  select(X, Y, N, pred.q1, pred.q3, point.diff, lb.diff, ub.diff, Pval, corrected.Pval)
+
+table4.total <- merge(table4, table4.adj, by = c("X", "Y"))
+
+table4.total <- table4.total %>%
+  select("X", "Y","N", "q1", "q3","pred.q1.x", "pred.q3.x", "point.diff.x",
+         "lb.diff.x", "ub.diff.x", "pred.q1.y", "pred.q3.y", "point.diff.y", 
+         "lb.diff.y", "ub.diff.y", "Pval", "corrected.Pval")
+```
+
+## All Results  
+#### .x = unadjusted results, .y = adjusted results  
+```{r echo=FALSE}
+all.results <- rbind(table1.total, table2.total, table3.total, table4.total)
+all.results <- all.results %>% arrange(Y, X)
+all.results <- cbind(all.results[,c(1:2)], round(all.results[,c(3:ncol(all.results))], digits = 3))
+kable(all.results, align = 'lccccccccccccccccc')
+```
+
+## Significant associations (corrected p-value <0.05)  
+#### .x = unadjusted results, .y = adjusted results  
+```{r echo=FALSE}
+sig <- all.results %>%
+  filter(corrected.Pval < 0.05)
+
+kable(sig)
+
+```
