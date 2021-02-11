@@ -205,7 +205,7 @@ Wvars<-c("sex","birthord", "momage","momheight","momedu",
                   "ari7d_t2", "diar7d_t2", "nose7d_t2", "life_viol_any_t3")
 
 #Add in time varying covariates:
-Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2") 
+Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2", "laz_t1", "waz_t1") 
 Wvars3<-c("ageday_bt3", "ageday_at3", "month_bt3", "month_at3", 
           "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
           "ari7d_t3", "diar7d_t3", "nose7d_t3") 
@@ -222,6 +222,7 @@ W2_immune.W23_anthro <- c(Wvars, Wvars_anthro23) %>% unique(.)
 
 add_hcz <- function(j, W){
   if (j=="hcz_t3"){Wset=c(W, "hcz_t2")}
+  else if (j=="hcz_t2"){Wset=c(W, "hcz_t1")}
   else {Wset=W}
   return(Wset)
 }
@@ -273,7 +274,7 @@ for (i in Xvars){
   for (j in Yvars){
     print(i)
     print(j)
-    Wvars = W2_immmune.W2_anthro
+    Wvars = add_hcz(j, W2_immmune.W2_anthro)
     d_sub <- subset(dfull, !is.na(dfull[,i]) & !is.na(dfull[,j]))
     print(generate_miss_tbl(Wvars, d_sub))
   }
@@ -322,9 +323,46 @@ for (i in Xvars){
   }
 }
 
+# add missingness category to caregiver report covariates
+summary(dfull$diar7d_t3)
+dfull$diar7d_t3<-as.factor(dfull$diar7d_t3)
+dfull$diar7d_t3<-addNA(dfull$diar7d_t3)
+levels(dfull$diar7d_t3)[length(levels(dfull$diar7d_t3))]<-"Missing"
+summary(dfull$diar7d_t3)
 
+summary(dfull$ari7d_t3)
+dfull$ari7d_t3<-as.factor(dfull$ari7d_t3)
+dfull$ari7d_t3<-addNA(dfull$ari7d_t3)
+levels(dfull$ari7d_t3)[length(levels(dfull$ari7d_t3))]<-"Missing"
+summary(dfull$ari7d_t3)
 
-saveRDS(d_full, paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
+summary(dfull$nose7d_t3)
+dfull$nose7d_t3<-as.factor(dfull$nose7d_t3)
+dfull$nose7d_t3<-addNA(dfull$nose7d_t3)
+levels(dfull$nose7d_t3)[length(levels(dfull$nose7d_t3))]<-"Missing"
+summary(dfull$nose7d_t3)
+
+# create factor variable with missingness level for growth measurements at year 1 and year 2
+growth.var <- c("laz_t1", "waz_t1", "hcz_t1", "laz_t2", "waz_t2", "hcz_t2")
+for (i in growth.var) {
+  cutpoints <- c(-3, -2, -1, -0)  
+  cuts <- c(min(dfull[[i]], na.rm = T), cutpoints, max(dfull[[i]], na.rm = T))
+  new_var <- paste(i, "_cat", sep="")
+  dfull[[new_var]] <- cut(dfull[[i]], 
+                          cuts,
+                          right = FALSE,
+                          include.lowest = TRUE)
+  dfull[[new_var]] <- as.factor(dfull[[new_var]])
+  dfull[[new_var]] <- fct_explicit_na(dfull[[new_var]], "Missing")
+  dfull[[new_var]] <- factor(dfull[[new_var]], levels = levels(dfull[[new_var]]))
+}
+
+# check missingness of categorical growth covariates
+generate_miss_tbl(paste(growth.var, "_cat", sep=""), dfull)
+
+names(dfull)
+
+saveRDS(dfull, paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
 
 
 

@@ -18,9 +18,9 @@ Wvars[!(Wvars %in% colnames(d))]
 
 
 #Add in time varying covariates:
-Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2") 
+Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2", "laz_t1_cat", "waz_t1_cat") 
 Wvars3<-c("ageday_bt3", "ageday_at3", "month_bt3", "month_at3", 
-          "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+          "laz_t2_cat", "waz_t2_cat", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
           "ari7d_t3", "diar7d_t3", "nose7d_t3") 
 Wvars23<-c("ageday_bt2", "ageday_at3", "month_bt2", "month_at3", 
            "laz_t2", "waz_t2", "cesd_sum_ee_t3", "pss_sum_mom_t3", 
@@ -33,8 +33,11 @@ W3_immune.W3_anthro <- c(Wvars, Wvars3) %>% unique(.)
 W2_immune.W3_anthro <- c(Wvars, Wvars23) %>% unique(.)
 W2_immune.W23_anthro <- c(Wvars, Wvars_anthro23) %>% unique(.)
 
-add_hcz <- function(j, W){
-  if (j=="hcz_t3"){Wset=c(W, "hcz_t2")}
+add_hcz <- function(i, j, W){
+  if (j=="hcz_t3"){
+    if(grepl("t2", i)){Wset=c(W, "hcz_t2")}
+    else {Wset=c(W, "hcz_t2_cat")}}
+  else if (j=="hcz_t2"){Wset=c(W, "hcz_t1_cat")}
   else {Wset=W}
   return(Wset)
 }
@@ -53,8 +56,8 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    Wset <- W2_immmune.W2_anthro
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset, forcedW=c("ageday_bt2", "ageday_at2"))
+    Wset <- add_hcz(i, j, W2_immmune.W2_anthro)
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
@@ -69,8 +72,8 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    Wset <- add_hcz(j, W3_immune.W3_anthro)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset, forcedW=c("ageday_bt3", "ageday_at3"))
+    Wset <- add_hcz(i, j, W3_immune.W3_anthro)
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }
@@ -122,8 +125,8 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    Wset <- add_hcz(j, W2_immune.W3_anthro)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset, forcedW=c("ageday_bt2", "ageday_at3"))
+    Wset <- add_hcz(i, j, W2_immune.W3_anthro)
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H2_adj_nofever_models <- bind_rows(H2_adj_nofever_models, res)
   }
@@ -175,7 +178,7 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_immune.W23_anthro, forcedW=c("ageday_bt2", "ageday_at2", "ageday_at3"))
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_immune.W23_anthro)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H3_adj_nofever_models <- bind_rows(H3_adj_nofever_models, res)
   }
@@ -226,7 +229,7 @@ for(i in Xvars){
   for(j in Yvars){
     print(i)
     print(j)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_immune.W23_anthro, forcedW=c("ageday_bt2", "ageday_at2", "ageday_at3"))
+    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=W2_immune.W23_anthro)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     delta_growth_adj_nofever_models <- bind_rows(delta_growth_adj_nofever_models, res)
   }
