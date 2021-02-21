@@ -1,8 +1,7 @@
 rm(list=ls())
 
-library('flextable')
-library('officer')
 source(here::here("0-config.R"))
+source(here::here("table-functions.R"))
 
 # load enrollment characteristics and results
 d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
@@ -15,122 +14,8 @@ H2adj <- readRDS(here('results/adjusted/H2_adj_nofever_res.RDS'))
 H3adj <- readRDS(here('results/adjusted/H3_adj_nofever_res.RDS'))
 delta_growth_adj <- readRDS(here('results/adjusted/delta_growth_adj_nofever_res.RDS'))
 
-
-#### Functions for growth tables ####
-growth_tbl <- function(name, expo_var, out_var, exposure, outcome, results, results_adj){
-  ### name: string name of group of exposures
-  ### expo_var: vector of string exposures to include in table
-  ### out_var: vector of string outcomes to include in table
-  ### exposure: vector of string exposure variable names
-  ### outcome: vector of string outcome variable names
-  ### results: data frame with unadjusted results
-  ### results_adj: data fram with adjusted results
-  
-  ### this function produces a table that can be saved as a csv
-  
-  tbl <- data.table(name = character(), "Outcome" = character(), "N" = character(), "25th Percentile" = character(), "75th Percentile" = character(),
-                    " Outcome, 75th Percentile v. 25th Percentile" = character(), " " = character(), " " = character(), " " = character(), " " = character(),
-                    " " = character(), " " = character(), " " = character(), " " = character(), " " = character())
-  tbl <- rbind(tbl, list(" ", " ", " ", " ", " ", "Unadjusted", " ", " ", " ", " ", "Fully adjusted", " ", " ", " ", " "))
-  tbl <- rbind(tbl, list(" ", " ", " ", " ", " ", 
-                         "Predicted Outcome at 25th Percentile", "Predicted Outcome at 75th Percentile", "Coefficient (95% CI)", "P-value", "FDR adjusted P-value", 
-                         "Predicted Outcome at 25th Percentile", "Predicted Outcome at 75th Percentile", "Coefficient (95% CI)", "P-value", "FDR adjusted P-value"))
-  skipped<-F
-  for (i in 1:length(exposure)) {
-    for (j in 1:length(outcome)) {
-      exp <- exposure[i]
-      out <- outcome[j]
-      filtered_res <- results[results$Y==out & results$X==exp,]
-      filtered_adj <- results_adj[results_adj$Y==out & results_adj$X==exp,]
-      unadj <- paste(round(filtered_res$`point.diff`, 2), " (", round(filtered_res$`lb.diff`, 2), ", ", round(filtered_res$`ub.diff`, 2), ")", sep="")
-      adj <- paste(round(filtered_adj$`point.diff`, 2), " (", round(filtered_adj$`lb.diff`, 2), ", ", round(filtered_adj$`ub.diff`, 2), ")", sep="")
-      if (nrow(filtered_res)==0){
-        skipped<-T
-        next
-      }
-      if(j==1|skipped==T){
-        tbl <- rbind(tbl, list(expo_var[i], out_var[j], filtered_res$N, round(filtered_res$q1, 2), round(filtered_res$q3, 2), 
-                               round(filtered_res$pred.q1, 2), round(filtered_res$pred.q3, 2), unadj, round(filtered_res$Pval, 2), round(filtered_res$corrected.Pval, 2), 
-                               round(filtered_adj$pred.q1, 2), round(filtered_adj$pred.q3, 2), adj, round(filtered_adj$Pval, 2), round(filtered_adj$corrected.Pval, 2)))
-        skipped<-F
-      }else {
-        tbl <- rbind(tbl, list("", out_var[j],  filtered_res$N, round(filtered_res$q1, 2), round(filtered_res$q3, 2), 
-                               round(filtered_res$pred.q1, 2), round(filtered_res$pred.q3, 2), unadj, round(filtered_res$Pval, 2), round(filtered_res$corrected.Pval, 2), 
-                               round(filtered_adj$pred.q1, 2), round(filtered_adj$pred.q3, 2), adj, round(filtered_adj$Pval, 2), round(filtered_adj$corrected.Pval, 2)))
-      }
-    }
-    if (i != length(exposure)) {
-      tbl <- rbind(tbl, list("","","","","","","","","","","","","","",""))
-    }
-  }
-  tbl
-}
-
-growth_tbl_flex <- function(name, expo_var, out_var, exposure, outcome, results, results_adj){
-  ### name: string name of group of exposures
-  ### expo_var: vector of string exposures to include in table
-  ### out_var: vector of string outcomes to include in table
-  ### exposure: vector of string exposure variable names
-  ### outcome: vector of string outcome variable names
-  ### results: data frame with unadjusted results
-  ### results_adj: data fram with adjusted results
-  
-  ### this function produces a table that can be saved as an image or 
-  ### directly to a word document!
-  
-  # build table
-  tbl <- data.table(matrix(nrow=0, ncol=15))
-  skipped<-F
-  for (i in 1:length(exposure)) {
-    for (j in 1:length(outcome)) {
-      exp <- exposure[i]
-      out <- outcome[j]
-      filtered_res <- results[results$Y==out & results$X==exp,]
-      filtered_adj <- results_adj[results_adj$Y==out & results_adj$X==exp,]
-      unadj <- paste(round(filtered_res$`point.diff`, 2), " (", round(filtered_res$`lb.diff`, 2), ", ", round(filtered_res$`ub.diff`, 2), ")", sep="")
-      adj <- paste(round(filtered_adj$`point.diff`, 2), " (", round(filtered_adj$`lb.diff`, 2), ", ", round(filtered_adj$`ub.diff`, 2), ")", sep="")
-      if (nrow(filtered_res)==0){
-        skipped<-T
-        next
-      }
-      if(j==1|skipped==T){
-        tbl <- rbind(tbl, list(expo_var[i], out_var[j],  filtered_res$N, round(filtered_res$q1, 2), round(filtered_res$q3, 2), 
-                               round(filtered_res$pred.q1, 2), round(filtered_res$pred.q3, 2), unadj, round(filtered_res$Pval, 2), round(filtered_res$corrected.Pval, 2), 
-                               round(filtered_adj$pred.q1, 2), round(filtered_adj$pred.q3, 2), adj, round(filtered_adj$Pval, 2), round(filtered_adj$corrected.Pval, 2)))
-        skipped=F
-      }else {
-        tbl <- rbind(tbl, list(" ", out_var[j],  filtered_res$N, round(filtered_res$q1, 2), round(filtered_res$q3, 2), 
-                               round(filtered_res$pred.q1, 2), round(filtered_res$pred.q3, 2), unadj, round(filtered_res$Pval, 2), round(filtered_res$corrected.Pval, 2), 
-                               round(filtered_adj$pred.q1, 2), round(filtered_adj$pred.q3, 2), adj, round(filtered_adj$Pval, 2), round(filtered_adj$corrected.Pval, 2)))
-      }
-    }
-    if (i != length(exposure)) {
-      tbl <- rbind(tbl, list("","","","","","","","", "","","","","","",""))
-    }
-  }
-  
-  # format for export
-  flextbl<-flextable(tbl, col_keys=names(tbl))
-  flextbl <- set_header_labels(flextbl,
-                               values = list("V1" = " ", "V2" = " ", "V3" = " ", "V4" = " ", "V5" = " ",
-                                             "V6" = "Predicted Outcome at 25th Percentile", "V7" = "Predicted Outcome at 75th Percentile", "V8" = "Coefficient (95% CI)", "V9" = "P-value", "V10" = "FDR Corrected P-value",
-                                             "V11" = "Predicted Outcome at 25th Percentile", "V12" = "Predicted Outcome at 75th Percentile", "V13" = "Coefficient (95% CI)", "V14" = "P-value", "V15" = "FDR Corrected P-value"))
-  flextbl <- add_header_row(flextbl, values = c("","","","","", "Unadjusted", "Fully adjusted"), colwidths=c(1,1,1,1,1,5,5))
-  # flextbl <- hline_top(flextbl, part="header", border=fp_border(color="black"))
-  flextbl <- add_header_row(flextbl, values = c(name, "Outcome","N","25th Percentile","75th Percentile", "Outcome, 75th Percentile v. 25th Percentile"), colwidths=c(1,1,1,1,1,10))
-  # flextbl <- hline_top(flextbl, part="header", border=fp_border(color="black"))
-  flextbl <- hline(flextbl, part="header", border=fp_border(color="black"))
-  flextbl <- hline_bottom(flextbl, part="body", border=fp_border(color="black"))
-  flextbl <- hline_top(flextbl, part="header", border=fp_border(color="black"))
-  flextbl <- align(flextbl, align = "center", part = "all")
-  flextbl <- align(flextbl, j = c(1, 2), align = "left", part="all")
-  flextbl <- autofit(flextbl, part = "all")
-  flextbl <- fit_to_width(flextbl, max_width=8)
-  
-  flextbl
-}
-
-
+full_res <- rbind(H1, H2, H3, delta_growth)
+full_adj_res <- rbind(H1adj, H2adj, H3adj, delta_growth_adj)
 #### MAIN TABLES ####
 #### Table 1 ####
 # Characteristics of participants
@@ -175,17 +60,41 @@ growth_tbl_flex <- function(name, expo_var, out_var, exposure, outcome, results,
 
 #### Table 2 ####
 
-exposure <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "t2_ln_ifn", "sumscore_t2_Z") 
-outcome <- c("laz_t2", "waz_t2", "whz_t2", "hcz_t2")
-expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF/IL-10", "Ln Th1/IL-10", "Ln Th2/IL-10",     
-              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln AGP", "Ln CRP", "Ln IFN-y", "Sum score of 13 cytokines") 
-out_var <- c("LAZ Year 1", "WAZ Year 1", "WLZ Year 1", "HCZ Year 1")
+exposure <- c("t2_ln_agp", "t2_ln_crp") 
+outcome <- c("laz_t2", "waz_t2", "whz_t2", "hcz_t2", "laz_t3", "waz_t3", "whz_t3", "hcz_t3",
+             "len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3",
+             "delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3")
+expo_var <- c("Ln AGP", "Ln CRP") 
+out_var <- c("LAZ Year 1", "WAZ Year 1", "WLZ Year 1", "HCZ Year 1",
+             "LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2",
+             "Length velocity Year 1 to Year 2",
+             "Weight velocity (kg/month) Year 1 to Year 2",
+             "Head circumference velocity (cm/month) Year 1 to Year 2",
+             "Change in LAZ Year 1 to Year 2", "Change in WAZ from Year 1 to Year 2",
+             "Change in WLZ from Year 1 to Year 2", "Change in HCZ from Year 1 to Year 2")
 
-tbl2 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj)
-tbl2flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj)
+tbl2 <- growth_tbl("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T)
+tbl2flex <- growth_tbl_flex("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T)
+tbl1supp <- growth_tbl("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res,)
+tbl1flexsupp <- growth_tbl_flex("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res,)
+
 
 #### Table 3 ####
+
+exposure <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
+              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_ifn", "sumscore_t2_Z") 
+outcome <- c("laz_t2", "waz_t2", "whz_t2", "hcz_t2")
+expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF/IL-10", "Ln Th1/IL-10", "Ln Th2/IL-10",     
+              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln IFN-y", "Sum score of 13 cytokines") 
+out_var <- c("LAZ Year 1", "WAZ Year 1", "WLZ Year 1", "HCZ Year 1")
+
+tbl3 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj, T)
+tbl3flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj, T)
+tbl2supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj)
+tbl2flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj)
+
+
+#### Table 4 ####
 
 exposure <- c("t3_ratio_pro_il10", "t3_ratio_il2_il10", "t3_ratio_gmc_il10", "t3_ratio_th1_il10", "t3_ratio_th2_il10",     
               "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "t3_ln_ifn", "sumscore_t3_Z")   
@@ -194,64 +103,88 @@ expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF
               "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln IFN-y", "Sum score of 13 cytokines") 
 out_var <- c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2")
 
-tbl3 <- growth_tbl("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj)
-tbl3flex <- growth_tbl_flex("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj)
-
-#### Table 4 ####
-
-exposure <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "t2_ln_ifn", "sumscore_t2_Z") 
-outcome <- c("laz_t3", "waz_t3", "whz_t3", "hcz_t3")
-expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF/IL-10", "Ln Th1/IL-10", "Ln Th2/IL-10",     
-              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln AGP", "Ln CRP", "Ln IFN-y", "Sum score of 13 cytokines") 
-out_var <- c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2")
-
-tbl4 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj)
-tbl4flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj)
-
+tbl4 <- growth_tbl("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj, T)
+tbl4flex <- growth_tbl_flex("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj, T)
+tbl3supp <- growth_tbl("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj)
+tbl3flexsupp <- growth_tbl_flex("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj)
 
 #### Table 5 ####
 
 exposure <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "t2_ln_ifn", "sumscore_t2_Z") 
-outcome <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
+              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_ifn", "sumscore_t2_Z") 
+outcome <- c("laz_t3", "waz_t3", "whz_t3", "hcz_t3")
 expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF/IL-10", "Ln Th1/IL-10", "Ln Th2/IL-10",     
-              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln AGP", "Ln CRP", "Ln IFN-y", "Sum score of 13 cytokines") 
-out_var <- c("Length velocity Year 1 to Year 2",
-             "Weight velocity (kg/month) Year 1 to Year 2",
-             "Head circumference velocity (cm/month) Year 1 to Year 2")
+              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17","Ln IFN-y", "Sum score of 13 cytokines") 
+out_var <- c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2")
 
-tbl5 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj)
-tbl5flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj)
+tbl5 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj, T)
+tbl5flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj, T)
+tbl4supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj)
+tbl4flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj)
 
 
 #### Table 6 ####
 
 exposure <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "t2_ln_ifn", "sumscore_t2_Z") 
+              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_ifn", "sumscore_t2_Z") 
+outcome <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
+expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF/IL-10", "Ln Th1/IL-10", "Ln Th2/IL-10",     
+              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln IFN-y", "Sum score of 13 cytokines") 
+out_var <- c("Length velocity (cm/month) Year 1 to Year 2",
+             "Weight velocity (kg/month) Year 1 to Year 2",
+             "Head circumference velocity (cm/month) Year 1 to Year 2")
+
+tbl6 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj, T)
+tbl6flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj, T)
+tbl5supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj)
+tbl5flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj)
+
+
+#### Table 7 ####
+
+exposure <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
+              "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_ifn", "sumscore_t2_Z") 
 outcome <- c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3")
 expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF/IL-10", "Ln Th1/IL-10", "Ln Th2/IL-10",     
-              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln AGP", "Ln CRP", "Ln IFN-y", "Sum score of 13 cytokines") 
-out_var <- c("Change in LAZ Year 1 to Year 2", "Change in WAZ from Year 1 to Year 2",
-             "Change in WLZ from Year 1 to Year 2", "Change in HCZ from Year 1 to Year 2")
+              "Ln Th17/IL-10", "Ln Th1/Th2", "Ln Th1/Th17", "Ln IFN-y", "Sum score of 13 cytokines") 
+out_var <- c("Change in LAZ Year 1 to Year 2", "Change in WAZ Year 1 to Year 2",
+             "Change in WLZ Year 1 to Year 2", "Change in HCZ Year 1 to Year 2")
 
-tbl6 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj)
-tbl6flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj)
+tbl7 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj, T)
+tbl7flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj, T)
+tbl6supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj)
+tbl6flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj)
 
 
 #### SAVE TABLES ####
 
-write.csv(tbl2, here('tables/immune-growth-table1.csv'))
-write.csv(tbl3, here('tables/immune-growth-table2.csv'))
-write.csv(tbl4, here('tables/immune-growth-table3.csv'))
-write.csv(tbl5, here('tables/immune-growth-table4.csv'))
-write.csv(tbl6, here('tables/immune-growth-table5.csv'))
+write.csv(tbl2, here('tables/main/immune-growth-table1.csv'))
+write.csv(tbl3, here('tables/main/immune-growth-table2.csv'))
+write.csv(tbl4, here('tables/main/immune-growth-table3.csv'))
+write.csv(tbl5, here('tables/main/immune-growth-table4.csv'))
+write.csv(tbl6, here('tables/main/immune-growth-table5.csv'))
+write.csv(tbl7, here('tables/main/immune-growth-table6.csv'))
 
-save_as_docx("Table 1: Association between Immune Status and Growth at Year 1" = tbl2flex, 
-             "Table 2: Association between Immune Status and Growth at Year 2" = tbl3flex, 
-             "Table 3: Association between Immune Status at Year 1 and Growth at Year 2" = tbl4flex, 
-             "Table 4: Association between Immune Status and Growth Velocity Between Year 1 and Year 2" = tbl5flex, 
-             "Table 5: Association between Immune Status and Change in Growth Between Year 1 and Year 2" = tbl6flex, 
+write.csv(tbl1supp, here('tables/supplementary/immune-growth-supptable1.csv'))
+write.csv(tbl2supp, here('tables/supplementary/immune-growth-supptable2.csv'))
+write.csv(tbl3supp, here('tables/supplementary/immune-growth-supptable3.csv'))
+write.csv(tbl4supp, here('tables/supplementary/immune-growth-supptable4.csv'))
+write.csv(tbl5supp, here('tables/supplementary/immune-growth-supptable5.csv'))
+write.csv(tbl6supp, here('tables/supplementary/immune-growth-supptable6.csv'))
+
+save_as_docx("Table 1: Association between CRP and AGP and Growth" = tbl2flex, 
+             "Table 2: Association between Immune Status and Growth at Year 1" = tbl3flex, 
+             "Table 3: Association between Immune Status and Growth at Year 2" = tbl4flex, 
+             "Table 4: Association between Immune Status at Year 1 and Growth at Year 2" = tbl5flex, 
+             "Table 5: Association between Immune Status and Growth Velocity Between Year 1 and Year 2" = tbl6flex, 
+             "Table 6: Association between Immune Status and Change in Growth Between Year 1 and Year 2" = tbl7flex, 
              path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth main.docx'))
 
+save_as_docx("Table S1: Association between CRP and AGP and Growth" = tbl1flexsupp, 
+             "Table S2: Association between Immune Status and Growth at Year 1" = tbl2flexsupp, 
+             "Table S3: Association between Immune Status and Growth at Year 2" = tbl3flexsupp, 
+             "Table S4: Association between Immune Status at Year 1 and Growth at Year 2" = tbl4flexsupp, 
+             "Table S5: Association between Immune Status and Growth Velocity Between Year 1 and Year 2" = tbl5flexsupp, 
+             "Table S6: Association between Immune Status and Change in Growth Between Year 1 and Year 2" = tbl6flexsupp, 
+             path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth-supplementary.docx'))
 
