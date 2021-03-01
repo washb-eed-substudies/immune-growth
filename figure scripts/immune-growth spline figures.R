@@ -312,8 +312,8 @@ p47 <- plot_grid(plist47[[1]], plist47[[2]], plist47[[3]], plist47[[4]], ncol=4,
 p48 <- plot_grid(plist48[[1]], plist48[[2]], plist48[[3]], plist48[[4]], ncol=4, labels=c("",""))
 
 #adjusted differences for analyses of concurrent growth at year 1
-pcomb1 <- plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,p9,p10,
-                    nrow=10,
+pcomb1 <- plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,
+                    nrow=8,
                     labels = c("","",""),
                     hjust=0.5, vjust=0.5,
                     rel_heights = c(1, 1, 1))
@@ -325,30 +325,44 @@ pcomb2 <- plot_grid(p11,p12,p13,p14,p15,p16,p17,p18,
                     hjust=0.5,vjust=0.5,
                     rel_heights = c(1, 1, 1, 1))
 #adjusted differences for immmune status and subsequent growth
-pcomb3 <- plot_grid(p19,p20,p21,p22,p23,p24,p25,p26,p27,p28,
-                    nrow=10,
+pcomb3 <- plot_grid(p19,p20,p21,p22,p23,p24,p25,p26,
+                    nrow=8,
                     labels = c("",""),
                     hjust=0.5,vjust=0.5,
                     rel_heights = c(1, 1, 1, 1))
 #adjusted differences for immune status and growth velocity
-pcomb4 <- plot_grid(p29,p30,p31,p32,p33,p34,p35,p36,p37,p38,
-                    nrow=10,
+pcomb4 <- plot_grid(p29,p30,p31,p32,p33,p34,p35,p36,
+                    nrow=8,
                     labels = c("",""),
                     hjust=0.5,vjust=0.5,
                     rel_heights = c(1, 1, 1, 1))
-pcomb5 <- plot_grid(p39,p40,p41,p42,p43,p44,p45,p46,p47,p48,
-                    nrow=10,
+pcomb5 <- plot_grid(p39,p40,p41,p42,p43,p44,p45,p46,
+                    nrow=8,
                     labels = c("",""),
                     hjust=0.5,vjust=0.5,
                     rel_heights = c(1, 1, 1, 1))
 
+# agp only
+agp <- plot_grid(p9,p27,p47,p37,
+                    nrow=4,
+                    labels = c("",""),
+                    hjust=0.5,vjust=0.5,
+                    rel_heights = c(1, 1, 1, 1))
+# crp only
+crp <- plot_grid(p10,p28,p48,p38,
+                    nrow=4,
+                    labels = c("",""),
+                    hjust=0.5,vjust=0.5,
+                    rel_heights = c(1, 1, 1, 1))
 
-ggsave(pcomb1, file = here("figures/concurrent-growth-y1.tiff"), height=16, width=9)
-ggsave(pcomb2, file = here("figures/concurrent-growth-y2.tiff"), height=14, width=9)
-ggsave(pcomb3, file = here("figures/subsequent-growth.tiff"), height=16, width=9)
-ggsave(pcomb4, file = here("figures/growth-velocity.tiff"), height=16, width=9)
-ggsave(pcomb5, file = here("figures/change-in-growth.tiff"), height=16, width=9)
+ggsave(pcomb1, file = here("figures/concurrent-growth-y1.tiff"), height=16, width=10)
+ggsave(pcomb2, file = here("figures/concurrent-growth-y2.tiff"), height=16, width=10)
+ggsave(pcomb3, file = here("figures/subsequent-growth.tiff"), height=16, width=10)
+ggsave(pcomb4, file = here("figures/growth-velocity.tiff"), height=16, width=10)
+ggsave(pcomb5, file = here("figures/change-in-growth.tiff"), height=16, width=10)
 
+ggsave(agp, file=here("figures/agp.tiff"), height=14, width=10)
+ggsave(crp, file=here("figures/crp.tiff"), height=14, width=10)
 
 # ggplot(d,aes(x = X)) +
 #   geom_smooth(aes(y = fit, color=y), se = F) +
