@@ -65,7 +65,7 @@ for(i in Xvars){
 
 # all immune outcomes at y2 and growth outcomes at y2
 Xvars <- c("t3_ratio_pro_il10", "t3_ratio_il2_il10", "t3_ratio_gmc_il10", "t3_ratio_th1_il10", "t3_ratio_th2_il10",     
-           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "sumscore_t3_Z", "t3_ln_ifn")            
+           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "t3_ln_crp", "t3_ln_agp", "sumscore_t3_Z", "t3_ln_ifn")            
 Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
 
 for(i in Xvars){
