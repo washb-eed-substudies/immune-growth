@@ -266,8 +266,7 @@ summary(dfull$nose7d_t2)
 
 generate_miss_tbl(Wvars, dfull)
 
-Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")         
+Xvars <- c("t2_ratio_pro_il10", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")         
 Yvars <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2")
 
 for (i in Xvars){
@@ -280,8 +279,6 @@ for (i in Xvars){
   }
 }
 
-Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")         
 Yvars <- c("laz_t3", "waz_t3", "whz_t3", "hcz_t3")
 
 for (i in Xvars){
@@ -294,8 +291,6 @@ for (i in Xvars){
   }
 }
 
-Xvars <- c("t2_ratio_pro_il10", "t2_ratio_il2_il10", "t2_ratio_gmc_il10", "t2_ratio_th1_il10", "t2_ratio_th2_il10",     
-           "t2_ratio_th17_il10", "t2_ratio_th1_th2", "t2_ratio_th1_th17", "t2_ln_agp", "t2_ln_crp", "sumscore_t2_Z", "t2_ln_ifn")         
 Yvars <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
 
 for (i in Xvars){
@@ -308,8 +303,7 @@ for (i in Xvars){
   }
 }
 
-Xvars <- c("t3_ratio_pro_il10", "t3_ratio_il2_il10", "t3_ratio_gmc_il10", "t3_ratio_th1_il10", "t3_ratio_th2_il10",     
-           "t3_ratio_th17_il10", "t3_ratio_th1_th2", "t3_ratio_th1_th17", "sumscore_t3_Z", "t3_ln_ifn", "t3_ln_agp", "t3_ln_crp")            
+Xvars <- c("t3_ratio_pro_il10", "sumscore_t3_Z", "t3_ln_ifn", "t3_ln_agp", "t3_ln_crp")            
 Yvars <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
 
 
