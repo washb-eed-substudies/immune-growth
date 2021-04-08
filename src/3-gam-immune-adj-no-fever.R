@@ -3,7 +3,9 @@ rm(list=ls())
 source(here::here("0-config.R"))
 #source(here::here("src/0-gam-functions.R"))
 
-d <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
+dfull <- readRDS(paste0(dropboxDir,"Data/Cleaned/Audrie/bangladesh-immune-growth-analysis-dataset.rds"))
+d <- dfull %>% filter(tr %in% c("Control", "Nutrition + WSH"))
+
 
 #Set list of adjustment variables
 #Make vectors of adjustment variable names
@@ -73,7 +75,9 @@ for(i in Xvars){
     print(i)
     print(j)
     Wset <- add_hcz(i, j, W3_immune.W3_anthro)
-    res_adj <- fit_RE_gam(d=d, X=i, Y=j,  W=Wset)
+    if (i %in% c("t3_ln_crp", "t3_ln_agp")){dfunc <- dfull}
+    else {dfunc <- d}
+    res_adj <- fit_RE_gam(d=dfunc, X=i, Y=j,  W=Wset)
     res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
     H1_adj_nofever_models <- bind_rows(H1_adj_nofever_models, res)
   }

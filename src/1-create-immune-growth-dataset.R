@@ -194,7 +194,7 @@ sum_score_d <- left_join(d, sum_score, by='childid')
 
 
 # add hhwealth
-d_hhwealth <- read.csv("C:/Users/Sophia/Documents/ee-secondary/sophia scripts/hhwealth.csv")
+d_hhwealth <- read.csv(paste0(dropboxDir, "Data/Cleaned/Audrie/hhwealth.csv"))
 dfull <- left_join(sum_score_d, d_hhwealth, by="dataid")
 
 
