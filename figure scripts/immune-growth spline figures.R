@@ -78,6 +78,10 @@ d46 <- d_for_plot("Th1/Th17 Year 1", c("Change in LAZ", "Change in WAZ", "Change
 d47 <- d_for_plot("AGP Year 1", c("Change in LAZ", "Change in WAZ", "Change in WLZ", "Change in HCZ"), "t2_ln_agp", c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3"), dgrowth_spline, dgrowth_quartiles)
 d48 <- d_for_plot("CRP Year 1", c("Change in LAZ", "Change in WAZ", "Change in WLZ", "Change in HCZ"), "t2_ln_crp", c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3"), dgrowth_spline, dgrowth_quartiles)
 
+d49 <- d_for_plot("CRP Year 2", c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2"), "t3_ln_crp", c("laz_t3", "waz_t3", "whz_t3", "hcz_t3"), H1_spline, H1_quartiles)
+d50 <- d_for_plot("AGP Year 2", c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2"), "t3_ln_agp", c("laz_t3", "waz_t3", "whz_t3", "hcz_t3"), H1_spline, H1_quartiles)
+
+
 d1$y <- factor(d1$y)
 d2$y <- factor(d2$y)
 d3$y <- factor(d3$y)
@@ -126,6 +130,8 @@ d45$y <- factor(d45$y)
 d46$y <- factor(d46$y)
 d47$y <- factor(d47$y)
 d48$y <- factor(d48$y)
+d49$y <- factor(d49$y)
+d50$y <- factor(d50$y)
 
 
 #spline plot function
@@ -151,7 +157,6 @@ spline_plot_functions <- function(d){
       geom_smooth(aes(y = fit, color=y), se = F) +
       geom_rug(aes(x=q1), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
       geom_rug(aes(x=q3), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
-      geom_point(aes(y=Y), alpha=0.5) +
       geom_ribbon(aes(ymin=lwrS, ymax=uprS, fill=y, color=y), alpha=0.5) +
       coord_cartesian(xlim = c(.$x.lb[1], .$x.ub[1]), ylim = c(.$y.lb[1], .$y.ub[1])) +
       scale_colour_manual(values=tableau10[c(1:4,1:4,1:4,5:7)], drop=TRUE, limits=color_levels) + 
@@ -164,7 +169,6 @@ spline_plot_functions <- function(d){
         geom_ribbon(aes(ymin=lwrS, ymax=uprS, fill=y, color=y), alpha=0.5) +
         geom_rug(aes(x=q1), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
         geom_rug(aes(x=q3), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
-        geom_point(aes(y=Y), alpha=0.5) +
         coord_cartesian(xlim = c(.$x.lb[1], .$x.ub[1]), ylim = c(.$y.lb[1], .$y.ub[1])) +
         scale_colour_manual(values=tableau10[c(1:4,1:4,1:4,5:7)], drop=TRUE, limits=color_levels) +
         scale_fill_manual(values=tableau10[c(1:4,1:4,1:4,5:7)], drop=TRUE, limits=color_levels) +
@@ -177,7 +181,6 @@ spline_plot_functions <- function(d){
         geom_rug(aes(x=q1), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
         geom_rug(aes(x=q3), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
         geom_ribbon(aes(ymin=lwrS, ymax=uprS, fill=y, color=y), alpha=0.5) +
-        geom_point(aes(y=Y), alpha=0.5) +
         coord_cartesian(xlim = c(.$x.lb[1], .$x.ub[1]), ylim = c(.$y.lb[1], .$y.ub[1])) +
         scale_colour_manual(values=tableau10[c(1:4,1:4,1:4,5:7)], drop=TRUE, limits=color_levels) +
         scale_fill_manual(values=tableau10[c(1:4,1:4,1:4,5:7)], drop=TRUE, limits=color_levels) +
@@ -186,7 +189,6 @@ spline_plot_functions <- function(d){
     if(nlevels==4){
       p4 <- d[d$y==levels(d$y)[4],] %>% {ggplot(.,aes(x = X)) +
           geom_smooth(aes(y = fit, color=y), se = F) +
-          geom_point(aes(y=Y), alpha=0.5) +
           geom_rug(aes(x=q1), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
           geom_rug(aes(x=q3), sides="b", length = unit(0.15, "npc"), size=1, color="grey30") +
           geom_ribbon(aes(ymin=lwrS, ymax=uprS, fill=y, color=y), alpha=0.5) +
@@ -256,6 +258,8 @@ plist45 <- spline_plot_functions(d45)
 plist46 <- spline_plot_functions(d46)
 plist47 <- spline_plot_functions(d47)
 plist48 <- spline_plot_functions(d48)
+plist49 <- spline_plot_functions(d49)
+plist50 <- spline_plot_functions(d50)
 
 
 p1 <- plot_grid(plist1[[1]], plist1[[2]], plist1[[3]], plist1[[4]], ncol=4, labels=c("",""))
@@ -310,6 +314,8 @@ p45 <- plot_grid(plist45[[1]], plist45[[2]], plist45[[3]], plist45[[4]], ncol=4,
 p46 <- plot_grid(plist46[[1]], plist46[[2]], plist46[[3]], plist46[[4]], ncol=4, labels=c("",""))
 p47 <- plot_grid(plist47[[1]], plist47[[2]], plist47[[3]], plist47[[4]], ncol=4, labels=c("",""))
 p48 <- plot_grid(plist48[[1]], plist48[[2]], plist48[[3]], plist48[[4]], ncol=4, labels=c("",""))
+p49 <- plot_grid(plist49[[1]], plist49[[2]], plist49[[3]], plist49[[4]], ncol=4, labels=c("",""))
+p50 <- plot_grid(plist50[[1]], plist50[[2]], plist50[[3]], plist50[[4]], ncol=4, labels=c("",""))
 
 #adjusted differences for analyses of concurrent growth at year 1
 pcomb1 <- plot_grid(p1,p2,p3,p4,p5,p6,p7,p8,
@@ -355,6 +361,11 @@ crp <- plot_grid(p10,p28,p48,p38,
                     hjust=0.5,vjust=0.5,
                     rel_heights = c(1, 1, 1, 1))
 
+crp_agp_t3 <- plot_grid(p50, p49,
+                        nrow=2,
+                        hjust=0.5,vjust=0.5,
+                        rel_heights=c(1,1))
+
 ggsave(pcomb1, file = here("figures/concurrent-growth-y1.tiff"), height=16, width=10)
 ggsave(pcomb2, file = here("figures/concurrent-growth-y2.tiff"), height=16, width=10)
 ggsave(pcomb3, file = here("figures/subsequent-growth.tiff"), height=16, width=10)
@@ -363,6 +374,8 @@ ggsave(pcomb5, file = here("figures/change-in-growth.tiff"), height=16, width=10
 
 ggsave(agp, file=here("figures/agp.tiff"), height=14, width=10)
 ggsave(crp, file=here("figures/crp.tiff"), height=14, width=10)
+ggsave(crp_agp_t3, file=here("figures/crp_agp_t3.tiff"), height=7, width=10)
+
 
 # ggplot(d,aes(x = X)) +
 #   geom_smooth(aes(y = fit, color=y), se = F) +
