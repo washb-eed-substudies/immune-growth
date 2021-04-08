@@ -194,7 +194,7 @@ save_as_docx("Table 1: Association between CRP and AGP at Year 1 and Growth" = t
              "Table 5: Association between Immune Status at Year 1 and Growth at Year 2" = tbl6flex, 
              "Table 6: Association between Immune Status and Growth Velocity Between Year 1 and Year 2" = tbl7flex, 
              "Table 7: Association between Immune Status and Change in Growth Between Year 1 and Year 2" = tbl8flex, 
-             path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth main v3.docx'))
+             path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth main v4.docx'))
 
 save_as_docx("Table S1: Association between CRP and AGP at Year 1 and Growth" = tbl1flexsupp, 
              "Table S2: Association between CRP and AGP at Year 1 and Growth" = tbl2flexsupp, 
@@ -203,5 +203,5 @@ save_as_docx("Table S1: Association between CRP and AGP at Year 1 and Growth" = 
              "Table S5: Association between Immune Status at Year 1 and Growth at Year 2" = tbl5flexsupp, 
              "Table S6: Association between Immune Status and Growth Velocity Between Year 1 and Year 2" = tbl6flexsupp, 
              "Table S7: Association between Immune Status and Change in Growth Between Year 1 and Year 2" = tbl7flexsupp, 
-             path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth-supplementary v3.docx'))
+             path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth-supplementary v4.docx'))
 
