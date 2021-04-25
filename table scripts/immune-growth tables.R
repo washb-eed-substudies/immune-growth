@@ -74,9 +74,9 @@ out_var <- c("LAZ Year 1", "WAZ Year 1", "WLZ Year 1", "HCZ Year 1",
              "Change in WLZ from Year 1 to Year 2", "Change in HCZ from Year 1 to Year 2")
 
 tbl2 <- growth_tbl("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T)
-tbl2flex <- growth_tbl_flex("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T)
+tbl2flex <- growth_tbl_flex("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T, .8, 1.6)
 tbl1supp <- growth_tbl("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res,)
-tbl1flexsupp <- growth_tbl_flex("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res,)
+tbl1flexsupp <- growth_tbl_flex("CRP and AGP Year 1", expo_var, out_var, exposure, outcome, full_res, full_adj_res)
 
 
 #### crp/agp year 2 ####
@@ -86,7 +86,7 @@ expo_var <- c("Ln AGP", "Ln CRP")
 out_var <- c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2")
 
 tbl3 <- growth_tbl("CRP and AGP Year 2", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T)
-tbl3flex <- growth_tbl_flex("CRP and AGP Year 2", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T)
+tbl3flex <- growth_tbl_flex("CRP and AGP Year 2", expo_var, out_var, exposure, outcome, full_res, full_adj_res, T, .7, .7)
 tbl2supp <- growth_tbl("CRP and AGP Year 2", expo_var, out_var, exposure, outcome, full_res, full_adj_res,)
 tbl2flexsupp <- growth_tbl_flex("CRP and AGP Year 2", expo_var, out_var, exposure, outcome, full_res, full_adj_res,)
 
@@ -101,7 +101,7 @@ expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF
 out_var <- c("LAZ Year 1", "WAZ Year 1", "WLZ Year 1", "HCZ Year 1")
 
 tbl4 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj, T)
-tbl4flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj, T)
+tbl4flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj, T, 1.3, .7)
 tbl3supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj)
 tbl3flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H1, H1adj)
 
@@ -116,7 +116,7 @@ expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF
 out_var <- c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2")
 
 tbl5 <- growth_tbl("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj, T)
-tbl5flex <- growth_tbl_flex("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj, T)
+tbl5flex <- growth_tbl_flex("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj, T, 1.3, .7)
 tbl4supp <- growth_tbl("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj)
 tbl4flexsupp <- growth_tbl_flex("Immune Status Year 2", expo_var, out_var, exposure, outcome, H1, H1adj)
 
@@ -131,7 +131,7 @@ expo_var <- c("Ln Pro-inflammatory cytokines/IL-10", "Ln IL-2/IL-10", "Ln GM-CSF
 out_var <- c("LAZ Year 2", "WAZ Year 2", "WLZ Year 2", "HCZ Year 2")
 
 tbl6 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj, T)
-tbl6flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj, T)
+tbl6flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj, T, 1.3, .7)
 tbl5supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj)
 tbl5flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H2, H2adj)
 
@@ -148,7 +148,7 @@ out_var <- c("Length velocity (cm/month) Year 1 to Year 2",
              "Head circumference velocity (cm/month) Year 1 to Year 2")
 
 tbl7 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj, T)
-tbl7flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj, T)
+tbl7flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj, T, 1.3, 1.6)
 tbl6supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj)
 tbl6flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, H3, H3adj)
 
@@ -164,7 +164,7 @@ out_var <- c("Change in LAZ Year 1 to Year 2", "Change in WAZ Year 1 to Year 2",
              "Change in WLZ Year 1 to Year 2", "Change in HCZ Year 1 to Year 2")
 
 tbl8 <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj, T)
-tbl8flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj, T)
+tbl8flex <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj, T, 1.3, 1.5)
 tbl7supp <- growth_tbl("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj)
 tbl7flexsupp <- growth_tbl_flex("Immune Status Year 1", expo_var, out_var, exposure, outcome, delta_growth, delta_growth_adj)
 
@@ -177,7 +177,7 @@ write.csv(tbl4, here('tables/main/immune-growth-table3.csv'))
 write.csv(tbl5, here('tables/main/immune-growth-table4.csv'))
 write.csv(tbl6, here('tables/main/immune-growth-table5.csv'))
 write.csv(tbl7, here('tables/main/immune-growth-table6.csv'))
-write.csv(tbl8, here('tables/main/immune-growth-table8.csv'))
+write.csv(tbl8, here('tables/main/immune-growth-table7.csv'))
 
 write.csv(tbl1supp, here('tables/supplementary/immune-growth-supptable1.csv'))
 write.csv(tbl2supp, here('tables/supplementary/immune-growth-supptable2.csv'))
@@ -194,7 +194,8 @@ save_as_docx("Table 1: Association between CRP and AGP at Year 1 and Growth" = t
              "Table 5: Association between Immune Status at Year 1 and Growth at Year 2" = tbl6flex, 
              "Table 6: Association between Immune Status and Growth Velocity Between Year 1 and Year 2" = tbl7flex, 
              "Table 7: Association between Immune Status and Change in Growth Between Year 1 and Year 2" = tbl8flex, 
-             path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth main v4.docx'))
+             path=here('C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/immune-growth main v5.docx'), 
+             pr_section = sect_properties)
 
 save_as_docx("Table S1: Association between CRP and AGP at Year 1 and Growth" = tbl1flexsupp, 
              "Table S2: Association between CRP and AGP at Year 1 and Growth" = tbl2flexsupp, 
