@@ -160,3 +160,13 @@ res$CI <- paste(res$point.diff %>% round(4), "(", res$lb.diff %>% round(4), ", "
 res %>% select(X, Y, Vlevel, N, q1, q3, pred.q1, pred.q3, point.diff, lb.diff, ub.diff, Pval, int.Pval) %>% 
   write.csv("C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/crp_agp_EMM_results.csv", row.names = F)
 
+res <- readRDS(here("results/adjusted/crp_agp_EMM_res.RDS"))
+H1adj <- readRDS(here('results/adjusted/H1_adj_nofever_res.RDS'))
+H2adj <- readRDS(here('results/adjusted/H2_adj_nofever_res.RDS'))
+H3adj <- readRDS(here('results/adjusted/H3_adj_nofever_res.RDS'))
+delta_growth_adj <- readRDS(here('results/adjusted/delta_growth_adj_nofever_res.RDS'))
+rbind(H1adj, H2adj, delta_growth_adj, H3adj) %>% filter(X %in% c("t2_ln_crp", "t2_ln_agp", "t3_ln_crp", "t3_ln_agp")) %>% select(X, Y, names(.)[names(.)!="X" & names(.)!="Y"]) %>%
+  write.csv("C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/crp_agp_results.csv", row.names = F)
+
+
+                                                                                                                                 
