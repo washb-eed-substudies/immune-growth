@@ -157,6 +157,6 @@ res <- gam.results(crp_agp_EMM_models, res)
 saveRDS(res, here("results/adjusted/crp_agp_EMM_res.RDS"))
 
 res$CI <- paste(res$point.diff %>% round(4), "(", res$lb.diff %>% round(4), ", ", res$ub.diff %>% round(4), ")", sep = "")
-res %>% select(X, Y, V, Vlevel, N, q1, q3, pred.q1, pred.q3, CI, Pval, int.Pval) %>% 
+res %>% select(X, Y, Vlevel, N, q1, q3, pred.q1, pred.q3, point.diff, lb.diff, ub.diff, Pval, int.Pval) %>% 
   write.csv("C:/Users/Sophia/Documents/WASH/WASH Immune and Growth/crp_agp_EMM_results.csv", row.names = F)
 
