@@ -104,7 +104,7 @@ gam.analysis <- function(save, Xvar = NULL, Yvar = NULL, data = d, Wvar = NULL, 
         print(i)
         print(j)
         print(k)
-        res_adj <- fit_RE_gam(d=data, X=i, Y=j,  W=Wvar, V=k)
+        res_adj <- fit_RE_gam(d=data, X=i, Y=j,  W=add_hcz(i, j, Wvar), V=k)
         res <- data.frame(X=i, Y=j,V=k, int.p =res_adj$int.p, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)))
         save <- bind_rows(save, res)
       }
