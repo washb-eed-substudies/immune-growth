@@ -1,0 +1,788 @@
+---
+title: "AGP CRP analysis"
+author: "Caitlin Hemlock"
+date: "9/1/2021"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(message = FALSE, warning = FALSE)
+```
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+source(here::here("0-config.R"))
+library(boxr)
+library(washbgam)
+library(tableone)
+library(table1)
+library(kableExtra)
+library(knitr)
+library(labelled)
+box_auth()
+
+dfull2 <- box_read("871638120165")
+dfull <- dfull2 %>% filter(immune_growth == 1)
+d <- dfull %>% filter(tr %in% c("Control", "Nutrition + WSH"))
+```
+
+### Figure 1
+#### Enrollment
+```{r fig.height=8, fig.width=8}
+figure1 <- tibble(x= 0:300, y= 0:300)
+
+#first box
+xmid = 50
+xmin = xmid-14
+xmax = xmid+14
+ymax = 200
+arrow.length = 20
+boxheight = 15
+boxwidth = 20
+
+ggplot(data=figure1, aes(x, y)) +
+  scale_x_continuous(breaks = seq(0, 300, 10), limits = c(0,100)) +
+  scale_y_continuous(breaks = seq(0, 200, 10), limits = c(0,200)) +
+  theme_linedraw() +
+  
+  #recruited
+  geom_rect(xmin=xmin, xmax=xmax, ymax=ymax, ymin=ymax-boxheight,
+            color='black', fill='white', size=0.25) +
+    annotate('text', x= xmid, y=(ymax-(boxheight/2)), 
+             label= 'Recruited for WASH-Benefits Trial\nn = 30,809', size=3) +
+  geom_segment(x=xmid, xend=xmid, y=ymax-boxheight, yend=ymax-boxheight*2, 
+               size=0.2, linejoin = "mitre", lineend = "butt", 
+               arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+  
+    annotate('text', y = ymax-boxheight/2, x = 20, label = 'Recruitment') +
+  
+      #did not consent
+      geom_rect(xmin=xmid+arrow.length, xmax=xmid+arrow.length+boxwidth, 
+                ymax=ymax-boxheight, ymin=ymax-boxheight*2,
+                color='black', fill='white', size=0.25) +
+        annotate('text', x= xmid+arrow.length+boxwidth/2, y=ymax-boxheight*1.5, 
+                 label= 'Did not consent\nn = 30,809', size=3) +
+      geom_segment(x=xmid, xend=xmid+arrow.length, y=ymax-boxheight*1.5, yend=ymax-boxheight*1.5, 
+                   size=0.2, linejoin = "mitre", lineend = "butt", 
+                   arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+  
+  #enrolled
+  geom_rect(xmin = xmin, xmax=xmax, ymax=ymax-boxheight*2, ymin=ymax-boxheight*3, 
+            color='black', fill='white', size=0.25) +
+    annotate('text', x= xmid, y=(ymax-boxheight*2-(boxheight/2)),
+             label= 'Enrolled in WASH-Benefits Trial\nn = 30,809', size=3) +
+  geom_segment(x=xmid, xend=xmid, y=ymax-boxheight*3, yend=ymax-boxheight*4, 
+               size=0.2, linejoin = "mitre", lineend = "butt", 
+               arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+  
+  annotate('text', y = ymax-boxheight*2-(boxheight/2), x = 20, label = 'Enrollment') +
+  
+  #allocation
+  geom_rect(xmin = xmin, xmax=xmax, ymax=ymax-boxheight*4, ymin=ymax-boxheight*5,  
+            color='black', fill='white', size=0.25) +
+    annotate('text', x= xmid, y=(ymax-boxheight*4-(boxheight/2)),
+             label= '90 geoblocks\n8 households per block', size=3) +
+  geom_segment(x=xmid, xend=xmid, y=ymax-boxheight*5, yend=ymax-boxheight*6, 
+               size=0.2, linejoin = "mitre", lineend = "butt", 
+               arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+
+  annotate('text', y = ymax-boxheight*4-(boxheight/2), x = 20, label = 'Allocation') +
+  
+  #subsample
+  geom_rect(xmin = xmin, xmax=xmax, ymax=ymax-boxheight*6, ymin=ymax-boxheight*7,  
+            color='black', fill='white', size=0.25) +
+    annotate('text', x= xmid, y=(ymax-boxheight*6-(boxheight/2)),
+             label= 'Control & N+WSH arms selected\nn clusters = XX, n children = XX', size=3) +
+  geom_segment(x=xmid, xend=xmid, y=ymax-boxheight*7, yend=ymax-boxheight*8, 
+               size=0.2, linejoin = "mitre", lineend = "butt", 
+               arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+  
+  annotate('text', y = ymax-boxheight*6-(boxheight/2), x = 20, label = 'Subsample') +
+
+      #post-enrollment LTFU
+      geom_rect(xmin=xmid+arrow.length, xmax=xmid+arrow.length+boxwidth, 
+                ymax=ymax-boxheight*7, ymin=ymax-boxheight*8,
+                color='black', fill='white', size=0.25) +
+        annotate('text', x= xmid+arrow.length+boxwidth/2, y=ymax-boxheight*7.5, 
+                 label= 'LTFU after enrollment\nn = 30,809', size=3) +
+      geom_segment(x=xmid, xend=xmid+arrow.length, y=ymax-boxheight*7.5, yend=ymax-boxheight*7.5, 
+                   size=0.2, linejoin = "mitre", lineend = "butt", 
+                   arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+
+  #year 1
+  geom_rect(xmin = xmin, xmax=xmax, ymax=ymax-boxheight*8, ymin=ymax-boxheight*9,  
+            color='black', fill='white', size=0.25) +
+    annotate('text', x= xmid, y=(ymax-boxheight*8-(boxheight/2)),
+             label= 'Measured at Year 1\nn children = XX', size=3) +
+  geom_segment(x=xmid, xend=xmid, y=ymax-boxheight*9, yend=ymax-boxheight*10, 
+               size=0.2, linejoin = "mitre", lineend = "butt", 
+               arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+  
+        #post-year 1 LTFU
+      geom_rect(xmin=xmid+arrow.length, xmax=xmid+arrow.length+boxwidth, 
+                ymax=(ymax-boxheight*9) +2.5, ymin=(ymax-boxheight*10) +2.5,
+                color='black', fill='white', size=0.25) +
+        annotate('text', x= xmid+arrow.length+boxwidth/2, y=(ymax-boxheight*9.5)+2.5, 
+                 label= 'LTFU after Year 1\nn = 30,809', size=3) +
+      geom_segment(x=xmid, xend=xmid+arrow.length, y=(ymax-boxheight*9.5)+2.5, yend=(ymax-boxheight*9.5)+2.5, 
+                   size=0.2, linejoin = "mitre", lineend = "butt", 
+                   arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+
+          #N + WSH added in
+      geom_rect(xmin=xmid-arrow.length, xmax=xmid-arrow.length-boxwidth, 
+                ymax=(ymax-boxheight*9)-2.5, ymin=(ymax-boxheight*10)-2.5,
+                color='black', fill='white', size=0.25) +
+        annotate('text', x= xmid-arrow.length-boxwidth/2, y=(ymax-boxheight*9.5)-2.5, 
+                 label= 'N + WSH arms\nn clusters = 30,809', size=3) +
+      geom_segment(x=xmid-arrow.length, xend=xmid, y=(ymax-boxheight*9.5)-2.5, yend=(ymax-boxheight*9.5)-2.5, 
+                   size=0.2, linejoin = "mitre", lineend = "butt", 
+                   arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+  
+  annotate('text', y = (ymax-boxheight*9.5)-2.5, x = xmid-arrow.length-boxwidth-5, 
+           label = 'Data Collection', angle = 90) +
+  
+  #year 2
+  geom_rect(xmin = xmin, xmax=xmax, ymax=ymax-boxheight*10, ymin=ymax-boxheight*11,  
+            color='black', fill='white', size=0.25) +
+    annotate('text', x= xmid, y=(ymax-boxheight*10-(boxheight/2)),
+             label= 'Measured at Year 2\nn clusters = XX, n children = XX', size=3) +
+  geom_segment(x=xmid, xend=xmid, y=ymax-boxheight*11, yend=ymax-boxheight*12, 
+               size=0.2, linejoin = "mitre", lineend = "butt", 
+               arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+   
+      #missing data
+      geom_rect(xmin=xmid+arrow.length, xmax=xmid+arrow.length+boxwidth+5, 
+                ymax=ymax-boxheight*11, ymin=ymax-boxheight*12,
+                color='black', fill='white', size=0.25) +
+        annotate('text', x= xmid+arrow.length+boxwidth/2 +2.5, y=ymax-boxheight*11.5, 
+                 label= 'Missing exposure/outcome\nn = 30,809', size=3) +
+      geom_segment(x=xmid, xend=xmid+arrow.length, y=ymax-boxheight*11.5, yend=ymax-boxheight*11.5, 
+                   size=0.2, linejoin = "mitre", lineend = "butt", 
+                   arrow = arrow(length = unit(1, "mm"), type= "closed")) +
+  
+   #analyzed
+   geom_rect(xmin = xmin, xmax=xmax, ymax=ymax-boxheight*12, ymin=ymax-boxheight*13,  
+            color='black', fill='white', size=0.25) +
+    annotate('text', x= xmid, y=(ymax-boxheight*12-(boxheight/2)),
+             label= 'Final analytical dataset\nn clusters = XX, n children = XX', size=3) +
+
+  annotate('text', y = ymax-boxheight*12-(boxheight/2), x = 20, label = 'Analysis') +
+  theme_void()
+```
+### Table 1
+#### Descriptive on study population at 14 months and 28 months
+```{r echo=FALSE, message=FALSE, warning=FALSE}
+#number of outcoems
+#mean should be the same
+#Exposures same
+#try adjusted results 
+
+d <- dfull %>% filter(tr %in% c("Control", "Nutrition + WSH"))
+
+Wvars<-c("sex","birthord", "momage","momheight","momedu", 
+         "hfiacat", "Nlt18","Ncomp", "watmin", "walls", 
+         "floor", "HHwealth", "tr")
+         
+Wvar.time <- c("life_viol_any_t3_cat", "laz_t1_cat", "waz_t1_cat","ageday_bt3", "ageday_at3", "month_bt3", "month_at3", "cesd_sum_ee_t3", "pss_sum_mom_t3","ari7d_t3", "diar7d_t3", "nose7d_t3", "ageday_at3", "month_bt2", "month_at3", "cesd_sum_ee_t3", "pss_sum_mom_t3", "ari7d_t3", "diar7d_t3", "nose7d_t3",  "ageday_at3",  "month_at3",  "cesd_sum_ee_t3", "pss_sum_mom_t3", "ari7d_t3", "diar7d_t3", "nose7d_t3") %>% unique(.)
+
+y1 <- d %>% select(Wvars, t2_ln_agp, t2_ln_crp, cesd_sum_t2, life_viol_any_t3_cat, ari7d_t2, diar7d_t2, nose7d_t2,ageday_bt2, ageday_at2,  month_bt2, month_at2,laz_t2_cat, waz_t2_cat,laz_t2, waz_t2, hcz_t2, whz_t2, ageday_bt2,ageday_bt2, ageday_at2,month_bt2, month_at2,laz_t2_cat, waz_t2_cat) %>% 
+  mutate(year = "14 months")
+colnames(y1) <- gsub("t2_", "", colnames(y1)); colnames(y1) <- gsub("t3_", "", colnames(y1))
+colnames(y1) <- gsub("_t2", "", colnames(y1))
+colnames(y1) <- gsub("t2", "", colnames(y1))
+
+
+y2 <- dfull %>% select(Wvars, t3_ln_agp, t3_ln_crp, cesd_sum_ee_t3, life_viol_any_t3_cat, pss_sum_mom_t3, ari7d_t3, diar7d_t3, nose7d_t3,ageday_bt3, ageday_at3,  month_bt3, month_at3,laz_t3, waz_t3, hcz_t3, whz_t3, ageday_bt3,ageday_bt3, ageday_at3,month_bt3, month_at3,laz_t3, waz_t3, hcz_t3, whz_t3) %>% 
+  mutate(year = "28 months") %>% rename(cesd_sum_t3 = cesd_sum_ee_t3)
+colnames(y2) <- gsub("t3_", "", colnames(y2))
+colnames(y2) <- gsub("_t3", "", colnames(y2))
+colnames(y2) <- gsub("t3", "", colnames(y2))
+
+long <- bind_rows(y1, y2)
+
+myVars <- c("sex", "ageday_a", "birthord", "month_a", "momage", "momheight", "momedu", "cesd_sum", "pss_sum_mom", "life_viol_any_cat", "hfiacat", "Nlt18", "Ncomp", "watmin", "walls", "floor", "HHwealth", "ari7d", "diar7d", "nose7d","laz", "waz", "hcz", "whz")
+
+catVars <- c("sex", "birthord", "momedu", "hfiacat", "walls", "floor", "ari7d", "diar7d", "nose7d")
+
+var_label(long$sex) <- "Child sex"
+var_label(long$ageday_a) <- "Age (days)"
+var_label(long$birthord) <- 'Birth order'
+var_label(long$month_a) <- "Month of data collection"
+var_label(long$momage) <- "Maternal age"
+var_label(long$momheight) <- "Maternal height"
+var_label(long$momedu) <- "Maternal education"
+var_label(long$cesd_sum) <- "Maternal CESD score"
+var_label(long$pss_sum_mom) <- "Maternal PSS score"
+var_label(long$life_viol_any_cat) <- "Maternal ever experienced IPV"
+var_label(long$hfiacat) <- "Household food insecurity score"
+var_label(long$Nlt18) <- "Number of individuals <18 in household"
+var_label(long$Ncomp) <- "Number of individuals in compound"
+var_label(long$watmin) <- "Walking time to water"
+var_label(long$walls) <- "Improved walls"
+var_label(long$floor) <- "Improved flooring"
+var_label(long$HHwealth) <- "Household wealth index"
+var_label(long$ari7d) <- "7-day recall of acute respiratory illness"
+var_label(long$diar7d) <- "7-day recall of diarrheal disease"
+var_label(long$nose7d) <- "7-day recall of upper respiratory symptoms"
+var_label(long$laz) <- "Length-for-age Z-score"
+var_label(long$waz) <- "Weight-for-age Z-score"
+var_label(long$hcz) <- "Head circumference-for-age Z-score"
+var_label(long$whz) <- "Weight for height Z-score"
+var_label(long$ln_agp) <- "Log AGP (g/L)"
+var_label(long$ln_crp) <- "Log CRP (mg/mL)"
+
+long[long == "Missing"] <- NA
+long[long == "missing"] <- NA
+levels(long$life_viol_any_cat) <- c(0,1, NA)
+
+y1 <- long %>% filter(year == "14 months")
+y2 <- long %>% filter(year == "28 months") %>%
+  mutate(trarms = ifelse(tr == "Control" | tr == "Nutrition + WSH", "C/N+WSH", "N/WSH"))
+
+table1.y1 <- CreateTableOne(vars= myVars, 
+                                 data= y1, 
+                                 factorVars = catVars)
+
+table1.y2 <- CreateTableOne(vars= myVars, 
+                                 data= y2, 
+                                 factorVars = catVars,
+                                 strata = c("trarms"), addOverall = T)
+
+t1.y1 <- 
+  print(table1.y1,
+        printToggle = FALSE,
+        test = FALSE,
+        catDigits = 0,
+        contDigits = 1, 
+        varLabels = T)
+
+t1.y2 <- 
+  print(table1.y2,
+        printToggle = FALSE,
+        test = FALSE,
+        catDigits = 0,
+        contDigits = 1, 
+        varLabels = T)
+
+t1.total <- cbind(t1.y1, t1.y2[-13,])
+t1.total <- t1.total[-c(8,14),]
+
+t1.total %>% 
+  kbl(align = 'cc') %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>%
+  pack_rows("Maternal Education", 8,10) %>%
+  pack_rows("Household food insecurity category", 13,16) %>%
+  add_header_above(c(" ", "14 months" = 1, "28 months" = 3))
+  
+
+```
+
+### Figure 2. 
+#### AGP/CRP distributions compared to reference values
+```{r echo=FALSE}
+fig2.agp <- dfull %>% select(childid, t2_ln_agp, t3_ln_agp)
+fig2.agp <- reshape2::melt(fig2.agp, id.vars = "childid") 
+fig2.agp <- fig2.agp %>%
+  group_by(variable) %>%
+  mutate(means = mean(value, na.rm = T),
+         ref = 0,
+         mes = "Log AGP (g/L)",
+         year = ifelse(variable == "t2_ln_agp", "14 months", "28 months"))
+
+fig2.crp <- dfull %>% select(childid, t2_ln_crp, t3_ln_crp)
+fig2.crp <- reshape2::melt(fig2.crp, id.vars = "childid") 
+fig2.crp <- fig2.crp %>%
+  group_by(variable) %>%
+  mutate(means = mean(value, na.rm = T),
+         ref = 1,
+         mes = "Log CRP (mg/mL)",
+         year = ifelse(variable == "t2_ln_crp", "14 months", "28 months"))
+
+fig2.total <- rbind(fig2.agp, fig2.crp)
+
+ggplot(data = fig2.total) +
+  geom_histogram(aes(x = value), fill = "gray", color = "black") +
+  #geom_vline(aes(xintercept = means, color = "Mean"), size = 1) +
+  geom_vline(aes(xintercept = ref, color = "Healthy reference value"), linetype = "dashed") + 
+  facet_grid(year~mes, scales = "free_x") +
+  theme(axis.title.x = element_blank(),
+        legend.position = "bottom",
+        legend.title = element_blank()) +
+  scale_color_manual(values = c("red")) +
+  labs(y = "Frequency")
+
+```
+
+
+```{r eval=FALSE, include=FALSE}
+#run analysis
+outliers <- function(j, data){
+  if (j %in% c("laz_t2", "laz_t3", "delta_laz_t2_t3", "len_velocity_t2_t3")){
+    dfunc <- data %>% filter(lenflag != 1)
+  } else if (j %in% c("waz_t2", "waz_t3", "delta_waz_t2_t3", "wei_velocity_t2_t3")){
+    dfunc <- data %>% filter(weiflag != 1)
+  } else if (j %in% c("hcz_t2", "hcz_t3", "delta_hcz_t2_t3", "hc_velocity_t2_t3")){
+    dfunc <- data %>% filter(hcflag != 1)
+  } else if (j %in% c("whz_t2", "whz_t3", "delta_whz_t2_t3")){
+    dfunc <- data %>% filter(whflag != 1)
+  } 
+  return(dfunc)
+}
+
+gam.unadj <- function(Xvars = NULL, Yvars = NULL, data = NULL){
+for(i in Xvars){
+  for(j in Yvars){
+    dfunc <- outliers(j, data)
+    res_unadj <- fit_RE_gam(d=dfunc, X=i, Y=j,  W=NULL)
+    res <- data.frame(X=i, Y=j, fit=I(list(res_unadj$fit)), dat=I(list(res_unadj$dat)))
+    unadj_models <- bind_rows(unadj_models, res)
+  }
+}
+  return(unadj_models)
+}
+unadj_models <- NULL
+
+#### Hypothesis 1: immune status associated with concurrent child growth ####
+# all immune ratios at Y1 v. growth outcomes at Y1
+X <- c("t2_ln_agp", "t2_ln_crp")            
+Y <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2") 
+unadj_models <- gam.unadj(data = d, Xvars = X, Yvars = Y)
+
+# all immune outcomes at y2 and growth outcomes at y2
+X <- c("t3_ln_crp", "t3_ln_agp")            
+Y <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
+unadj_models <- gam.unadj(data = dfull, Xvars = X, Yvars = Y)
+
+#### Hypothesis 2: immune status and subsequent growth ####
+# all immune outcomes at y1 v. growth at y2
+X <- c("t2_ln_agp", "t2_ln_crp")
+Y <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
+unadj_models <- gam.unadj(data = d, Xvars = X, Yvars = Y)
+
+#### Hypothesis 3: immune status and child growth velocity ####
+# immune ratios at y1 and growth velocity outcomes between y1 and y2
+X <- c("t2_ln_agp", "t2_ln_crp")
+Y <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
+unadj_models <- gam.unadj(data = d, Xvars = X, Yvars = Y)
+
+#### Hypothesis 4 ####
+# immune ratios at y1 v. change in growth outcomes between y1 and y2
+X <- c("t2_ln_agp", "t2_ln_crp")
+Y <- c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3")
+unadj_models <- gam.unadj(data = d, Xvars = X, Yvars = Y)
+
+#Get primary contrasts
+unadj_res <- NULL
+for(i in 1:nrow(unadj_models)){
+  res <- data.frame(X=unadj_models$X[i], Y=unadj_models$Y[i])
+  preds <- predict_gam_diff(fit=unadj_models$fit[i][[1]], d=unadj_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  unadj_res <-  bind_rows(unadj_res , preds$res)
+}
+
+#ADJUSTED
+#Make vectors of adjustment variable names
+Wvars<-c("sex","birthord","momage","momheight","momedu", 
+         "hfiacat", "Nlt18","Ncomp", "watmin", "walls", 
+         "floor", "HHwealth", "tr", "cesd_sum_t2", 
+         "ari7d_t2", "diar7d_t2", "nose7d_t2", "life_viol_any_t3")
+
+#table(dfull$roof)
+#removed roof because of low variability
+
+#Add in time varying covariates:
+Wvars2<-c("ageday_bt2", "ageday_at2",  "month_bt2", "month_at2", 
+          "laz_t1_cat", "waz_t1_cat") 
+Wvars3<-c("ageday_bt3", "ageday_at3", "month_bt3", "month_at3", 
+          "laz_t2_cat", "waz_t2_cat", 
+          "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+          "ari7d_t3", "diar7d_t3", "nose7d_t3") 
+Wvars23<-c("ageday_bt2", "ageday_at3", "month_bt2", "month_at3", 
+           "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+           "ari7d_t3", "diar7d_t3", "nose7d_t3")
+Wvars_anthro23<-c("ageday_bt2", "ageday_at2", "ageday_at3", "month_bt2", "month_at2", "month_at3", 
+                  "cesd_sum_ee_t3", "pss_sum_mom_t3", 
+                  "ari7d_t3", "diar7d_t3", "nose7d_t3")
+
+W2_immmune.W2_anthro <- c(Wvars, Wvars2) %>% unique(.)
+W3_immune.W3_anthro <- c(Wvars, Wvars3) %>% unique(.)
+W2_immune.W3_anthro <- c(Wvars, Wvars23) %>% unique(.)
+W2_immune.W23_anthro <- c(Wvars, Wvars_anthro23) %>% unique(.)
+
+add_hcz <- function(i, j, W){
+  if (j %in% c("hcz_t3")){
+    if(grepl("t2", i)){Wset=W}
+    else {Wset=c(W, "hcz_t2_cat")}}
+  else if (j=="hcz_t2"){Wset=c(W, "hcz_t1_cat")}
+  else {Wset=W}
+  return(Wset)
+}
+
+#missing <- function(j){
+#  if(j %in% c("laz_t2", "waz_t2", "whz_t2")){
+#    dfunc <- dfunc %>% filter(laz_t1_cat != "Missing" & waz_t1_cat != "Missing")
+#  } else if(j == "hcz_t2"){
+#    dfunc <- dfunc %>% filter(laz_t1_cat != "Missing" & waz_t1_cat != "Missing" & hcz_t1_cat != "Missing")
+#  } else if(j %in% c("laz_t3", "waz_t3", "whz_t3")){
+#    dfunc <- dfunc %>% filter(laz_t2_cat != "Missing" & waz_t2_cat != "Missing")
+#  } else if(j == "hcz_t3"){
+#    dfunc <- dfunc %>% filter(laz_t2_cat != "Missing" & waz_t2_cat != "Missing" & hcz_t2_cat != "Missing")
+#  } else {
+#    dfunc = dfunc
+#  }
+#  return(dfunc)
+#}
+
+gam.adj <- function(Xvars = NULL, Yvars = NULL, Wvars = NULL, data = NULL){
+  for(i in Xvars){
+  for(j in Yvars){
+    print(i)
+    print(j)
+    dfunc <- outliers(j, data)
+    #dfunc <- missing(j)
+    Wset <- add_hcz(i, j, Wvars)
+    res_adj <- fit_RE_gam(d=dfunc, X=i, Y=j,  W=Wset)
+    res <- data.frame(X=i, Y=j, fit=I(list(res_adj$fit)), dat=I(list(res_adj$dat)), 
+                      covs = res_adj$covars)
+    adj_models <- bind_rows(adj_models, res)
+  }
+  }
+  return(adj_models)
+}
+adj_models <- NULL
+
+#### Hypothesis 1: immune status associated with concurrent child growth ####
+# all immune ratios at Y1 v. growth outcomes at Y1
+X <- c("t2_ln_agp", "t2_ln_crp")
+Y <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2") 
+adj_models <- gam.adj(Xvars = X, Yvars = Y, Wvars = W2_immmune.W2_anthro, data = d)
+
+# all immune outcomes at y2 and growth outcomes at y2
+X <- c("t3_ln_crp", "t3_ln_agp")            
+Y <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
+adj_models <- gam.adj(Xvars = X, Yvars = Y, Wvars = W3_immune.W3_anthro, data = dfull)
+
+#### Hypothesis 2: immune status and subsequent growth ####
+# all immune outcomes at y1 v. growth at y2
+X <- c("t2_ln_agp", "t2_ln_crp")            
+Y <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
+adj_models <- gam.adj(Xvars = X, Yvars = Y, Wvars = W2_immune.W3_anthro, data = d)
+
+#### Hypothesis 3: immune status and child growth velocity ####
+# immune ratios at y1 and growth velocity outcomes between y1 and y2
+X <- c("t2_ln_agp", "t2_ln_crp")            
+Y <- c("len_velocity_t2_t3", "wei_velocity_t2_t3", "hc_velocity_t2_t3")
+adj_models <- gam.adj(Xvars = X, Yvars = Y, Wvars = W2_immune.W23_anthro, data = d)
+
+#### Hypothesis ####
+# immune ratios at y1 v. change in growth outcomes between y1 and y2
+X <- c("t2_ln_agp", "t2_ln_crp")            
+Y <- c("delta_laz_t2_t3", "delta_waz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3")
+adj_models <- gam.adj(Xvars = X, Yvars = Y, Wvars = W2_immune.W23_anthro, data = d)
+
+#Get primary contrasts
+adj_res <- NULL
+for(i in 1:nrow(adj_models)){
+  res <- data.frame(X=adj_models$X[i], Y=adj_models$Y[i],
+                    covs = adj_models$covs[i])
+  preds <- predict_gam_diff(fit=adj_models$fit[i][[1]], 
+                            d=adj_models$dat[i][[1]], quantile_diff=c(0.25,0.75), Xvar=res$X, Yvar=res$Y)
+  preds <- cbind(preds$res, covs = res$covs)
+  adj_res <-  bind_rows(adj_res, preds)
+}
+
+```
+
+### Figure 3. 
+#### Relationships between concurrent inflammantion and concurrent and subsequent growth.
+```{r eval=FALSE, fig.height=8, fig.width=8, message=FALSE, warning=FALSE, include=FALSE}
+unadj_res_plot1 <- unadj_res %>%
+  select(X, Y, point.diff, ub.diff, lb.diff, Pval) %>%
+  mutate(adj = "Unadjusted",
+         sig = ifelse(Pval < 0.05, 1, 0),
+         outcome = ifelse(Y %in% grep("whz", unadj_res$Y, value = T), "Weight for length",
+                   ifelse(Y %in% c(grep("laz", unadj_res$Y, value = T), "len_velocity_t2_t3"), "Length",
+                   ifelse(Y %in% c(grep("waz", unadj_res$Y, value = T), "wei_velocity_t2_t3"), "Weight",
+                   ifelse(Y %in% c(grep("hcz", unadj_res$Y, value = T), "hc_velocity_t2_t3"), 
+                          "Head circumference", NA)))))
+
+adj_res_plot1 <- adj_res %>%
+  select(X, Y, point.diff, ub.diff, lb.diff, Pval) %>%
+  mutate(adj = "Adjusted",
+         sig = ifelse(Pval < 0.05, 1, 0),
+         outcome = ifelse(Y %in% c(grep("hcz", adj_res$Y, value = T), "hc_velocity_t2_t3"), 
+                          "Head circumference", 
+                   ifelse(Y %in% c(grep("laz", adj_res$Y, value = T), "len_velocity_t2_t3"), "Length",
+                   ifelse(Y %in% c(grep("waz", adj_res$Y, value = T), "wei_velocity_t2_t3"), "Weight",
+                   ifelse(Y %in% grep("whz", adj_res$Y, value = T), "Weight for length", NA)))))
+
+plot1 <- rbind(unadj_res_plot1, adj_res_plot1)
+plot1.long <- reshape2::melt(plot1, id = c("X", "Y", "Pval", "sig", "outcome", "adj"))
+
+plot1.long$X <- factor(plot1.long$X, levels = c("t2_ln_crp", "t3_ln_crp", "t2_ln_agp", "t3_ln_agp"),
+                   labels = c("CRP at 14mo", "CRP at 28mo", "AGP at 14mo", "AGP at 28mo"))
+
+plot1.long$Y[plot1.long$Y %in% c("laz_t2", "hcz_t2", "waz_t2", "whz_t2")] <- "Z-score at 14 months"
+plot1.long$Y[plot1.long$Y %in% c("laz_t3", "hcz_t3", "waz_t3", "whz_t3")] <- "Z-score at 28 months"
+plot1.long$Y[plot1.long$Y %in% c("delta_hcz_t2_t3", "delta_laz_t2_t3", 
+                         "delta_waz_t2_t3", "delta_whz_t2_t3")] <- "14-28mo change in Z-score"
+plot1.long$Y[plot1.long$Y %in% c("len_velocity_t2_t3", "hc_velocity_t2_t3")] <- "Velocity (cm/month)"
+plot1.long$Y[plot1.long$Y %in% c("wei_velocity_t2_t3")] <- "Velocity (kg/month)"
+                         
+plot1.long$Y <- factor(plot1.long$Y, levels = c("Velocity (cm/month)","Velocity (kg/month)",
+                                       "14-28mo change in Z-score", "Z-score at 28 months", "Z-score at 14 months"))
+
+plot1.long <- plot1.long %>% 
+  filter(!(Y %in% grep("change", plot1.long$Y, value = T))) %>%
+  filter(!(Y %in% grep("Velocity", plot1.long$Y, value = T)))
+
+plot1.long <- plot1.long %>%
+  mutate(sig.new = ifelse(adj == "Unadjusted", "Unadjusted", ifelse(sig == 1, "Adjusted (p < 0.05)", "Adjusted (p >= 0.05)")))
+
+ggplot(data = plot1.long , aes(x = Y, y = value)) +
+  geom_point(aes(color = sig.new), position = position_dodge(0.8))+
+  geom_line(aes(color = sig.new), position = position_dodge(0.8))+
+  facet_grid(outcome ~ X, scales = "free_y")+
+  coord_flip() +
+  geom_hline(yintercept = 0, color = "black", linetype = "dashed") +
+  theme(legend.position = "bottom",
+        strip.text.y = element_text(size = 12)) +
+  labs(x = "Measurement", y = "Mean Difference between 25th and 75th \npercentile of exposure distribution",
+       color = "") +
+  scale_color_manual(values = c("red","black","gray"))
+```
+
+### Table 2. 
+#### Relationships between concurrent inflammantion and concurrent and subsequent growth.
+```{r eval=FALSE, include=FALSE}
+table2 <- merge(unadj_res, adj_res, by = c("X", "Y"))
+
+for(i in c("point.diff.x", "lb.diff.x", "ub.diff.x", "point.diff.y", "lb.diff.y","ub.diff.y")){
+  table2[[i]] <- as.character(round(table2[[i]], 2))
+}
+
+table2 <- table2 %>%
+  rename(n = N.y) %>%
+  mutate(unadj = paste(point.diff.x, " (", lb.diff.x, ", ", ub.diff.x, ")", sep = ""),
+         adj = paste(point.diff.y, " (", lb.diff.y, ", ", ub.diff.y, ")", sep = "")) %>%
+  select(X, Y, n, unadj, adj) %>%
+  filter(!(Y %in% grep("delta", table2$Y, value = T))) %>%
+  filter(!(Y %in% grep("velocity", table2$Y, value = T)))
+
+options(scipen = 999)
+
+tbl2.form <- rbind(
+              cbind(table2[which(table2$Y == "laz_t2" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "laz_t3" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "laz_t3" & table2$X == "t3_ln_agp"), c(3,5)]),
+              cbind(table2[which(table2$Y == "waz_t2" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "waz_t3" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "waz_t3" & table2$X == "t3_ln_agp"), c(3,5)]),
+              cbind(table2[which(table2$Y == "hcz_t2" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "hcz_t3" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "hcz_t3" & table2$X == "t3_ln_agp"), c(3,5)]),
+              cbind(table2[which(table2$Y == "whz_t2" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "whz_t3" & table2$X == "t2_ln_agp"), c(3,5)],
+                   table2[which(table2$Y == "whz_t3" & table2$X == "t3_ln_agp"), c(3,5)]),
+              cbind(table2[which(table2$Y == "laz_t2" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "laz_t3" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "laz_t3" & table2$X == "t3_ln_crp"), c(3,5)]),
+              cbind(table2[which(table2$Y == "waz_t2" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "waz_t3" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "waz_t3" & table2$X == "t3_ln_crp"), c(3,5)]),
+              cbind(table2[which(table2$Y == "hcz_t2" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "hcz_t3" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "hcz_t3" & table2$X == "t3_ln_crp"), c(3,5)]),
+              cbind(table2[which(table2$Y == "whz_t2" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "whz_t3" & table2$X == "t2_ln_crp"), c(3,5)],
+                   table2[which(table2$Y == "whz_t3" & table2$X == "t3_ln_crp"), c(3,5)])
+)
+tbl2.form <- cbind(growth = c("LAZ", "WAZ", "HCZ", "WHZ", "LAZ", "WAZ", "HCZ", "WHZ"), tbl2.form)
+row.names(tbl2.form) <- 1:nrow(tbl2.form)
+colnames(tbl2.form) <- c("", "n", "Adjusted Mean Difference* (95% CI)", "n", 
+                          "Adjusted Mean Difference* (95% CI)", "n", "Adjusted Mean Difference* (95% CI)")
+tbl2.form %>% 
+  kbl(align = 'lcccc') %>%
+  kable_classic(full_width = F, html_font = "Cambria") %>%
+  pack_rows("Log AGP", 1,4) %>%
+  pack_rows("Log CRP", 5, 8) %>%
+  add_header_above(c(" ", "Growth at 14 months" = 2, "Growth at 28 months" = 4)) %>%
+  add_header_above(c(" ", "Inflammation at 14 months" = 4, "Inflammation at 28 months" = 2))
+```
+
+
+```{r eval=FALSE, include=FALSE}
+#inspect plots
+newmodels <- adj_models[c(1:24),]
+
+concurrent.models <- newmodels[which((newmodels$X %in% grep("t2", newmodels$X, value = T) &
+                                      newmodels$Y %in% grep("t2", newmodels$Y, value = T)) |
+                                      (newmodels$X %in% grep("t3", newmodels$X, value = T) &
+                                      newmodels$Y %in% grep("t3", newmodels$Y, value = T))),]
+concurrent.plots <- list(NULL)
+for(i in 1:nrow(concurrent.models)){
+  data <- concurrent.models$dat[[i]]
+  model <- concurrent.models$fit[[i]]
+  x <- concurrent.models$X[[i]]
+  y <- concurrent.models$Y[[i]]
+  quarts <- quantile(data[,2], probs = c(0.25, 0.75))
+  plot <- gam_simul_CI(m = model, newdata = data, xlab = x, ylab = y)
+  plot <- plot$p + 
+    geom_vline(xintercept = quarts[1], linetype = "dashed") + geom_vline(xintercept = quarts[2], linetype = "dashed")
+  concurrent.plots[[i]] <- plot
+}
+
+for(i in 1:length(concurrent.plots)){
+  print(concurrent.plots[[i]])
+}
+
+subsequent.models <- newmodels[which((newmodels$X %in% grep("t2", newmodels$X, value = T)) &
+                                      (newmodels$Y %in% grep("t3", newmodels$Y, value = T))),]
+subsequent.plots <- list(NULL)
+
+for(i in 1:nrow(subsequent.models)){
+  data <- subsequent.models$dat[[i]]
+  model <- subsequent.models$fit[[i]]
+  x <- subsequent.models$X[[i]]
+  y <- subsequent.models$Y[[i]]
+  quarts <- quantile(data[,2], probs = c(0.25, 0.75))
+  plot <- gam_simul_CI(m = model, newdata = data, xlab = x, ylab = y)
+  plot <- plot$p + 
+    geom_vline(xintercept = quarts[1], linetype = "dashed") + geom_vline(xintercept = quarts[2], linetype = "dashed")
+  subsequent.plots[[i]] <- plot
+}
+
+for(i in 1:length(subsequent.plots)){
+  print(subsequent.plots[[i]])
+}
+
+```
+### Figure 3. 
+#### Predicted relationships between log AGP (g/L) and LAZ, WAZ, and HCZ measured concurrently 
+```{r eval=FALSE, fig.height=3.5, fig.width=10, message=FALSE, warning=FALSE, include=FALSE}
+gam_simul_CI <- function(m,newdata,nreps=10000, xlab="", ylab="", title="", gam_diff=NULL) {
+  set.seed(12345)
+  require(mgcv)
+  require(dplyr)
+
+  newdata <- newdata %>% mutate(dummy=0)
+
+  Wvars <- colnames(newdata)[!(colnames(newdata) %in% c("Y","X" ,"id" ,"dummy"))]
+  #set covariates to the median/mode
+  for(i in Wvars){
+    if(class(newdata[,i])=="character"|class(newdata[,i])=="factor"){
+      newdata[,i] <- Mode(newdata[,i])
+    }else{
+      newdata[,i] <- median(newdata[,i])
+    }
+  }
+
+  newdata <- newdata[order(newdata$X),]
+
+  Vb <- vcov(m,unconditional = TRUE)
+  pred <- predict(m, newdata, se.fit = TRUE)
+  fit <- pred$fit
+  se.fit <- pred$se.fit
+  BUdiff <- MASS::mvrnorm(n=nreps, mu = rep(0, nrow(Vb)), Sigma = Vb)
+  Cg <- predict(m, newdata, type = "lpmatrix")
+  simDev <- Cg %*% t(BUdiff)
+  absDev <- abs(sweep(simDev, 1, se.fit, FUN = "/"))
+  masd <- apply(absDev, 2L, max)
+  crit <- quantile(masd, prob = 0.95, type = 8)
+  pred <- data.frame(newdata,fit=pred$fit,se.fit=pred$se.fit)
+  pred <- mutate(pred,
+                 uprP = fit + (2 * se.fit),
+                 lwrP = fit - (2 * se.fit),
+                 uprS = fit + (crit * se.fit),
+                 lwrS = fit - (crit * se.fit)
+  )
+
+  pred <- pred %>% arrange(X)
+  p <- ggplot(pred) + geom_ribbon(aes(x=X, ymin=lwrS, ymax=uprS), alpha=0.3) +
+    #geom_path(aes(x=X, y=lwrS), color="blue")+
+    #geom_path(aes(x=X, y=uprS), color="red")+
+    geom_path(aes(x=X, y=fit ), color="black") +
+    xlab(xlab) + ylab(ylab) +
+    ggtitle(title)
+
+  if(!is.null(gam_diff)){
+    p <- p +
+      geom_vline(xintercept = gam_diff$q1) +
+      geom_vline(xintercept = gam_diff$q3) +
+      ggtitle(paste0(round(gam_diff$point.diff,2)," (",
+                     round(gam_diff$lb.diff,2), ", ",
+                     round(gam_diff$ub.diff,2), ")"))
+  }
+
+  return(list(p=p, pred=pred))
+}
+
+plot.models <- adj_models[which(adj_models$X == "t2_ln_agp" & 
+                                  (adj_models$Y == "laz_t2" | adj_models$Y == "waz_t2" | adj_models$Y == "hcz_t2")),]
+
+fig3 <- list(NULL)
+for(i in 1:nrow(plot.models)){
+  data <- plot.models$dat[[i]]
+  model <- plot.models$fit[[i]]
+  x <- plot.models$X[[i]]
+  y <- plot.models$Y[[i]]
+  quarts <- quantile(data[,2], probs = c(0.25, 0.75))
+  plot <- gam_simul_CI(m = model, newdata = data, xlab = x, ylab = y)
+  plot <- plot$p + 
+    geom_vline(xintercept = quarts[1], linetype = "dashed") + geom_vline(xintercept = quarts[2], linetype = "dashed")
+  fig3[[i]] <- plot
+}
+
+laz <- fig3[[1]] +
+  labs(y = "LAZ at 14 months", x = "Log AGP (g/L) at 14 months") +
+  theme(axis.title = element_text(size = 10), axis.text = element_text(size = 10))
+waz <- fig3[[2]] +
+  labs(y = "WAZ at 14 months", x = "Log AGP (g/L) at 14 months")+
+  theme(axis.title = element_text(size = 10), axis.text = element_text(size = 10))
+hcz <- fig3[[3]] +
+  labs(y = "HCZ at 14 months", x = "Log AGP (g/L) at 14 months")+
+  theme(axis.title = element_text(size = 10), axis.text = element_text(size = 10))
+
+plot_grid(laz, waz, hcz, nrow = 1)
+```
+
+```{r}
+plot <- dfull
+plot$quart <- cut(plot$laz_t2, breaks = quantile(dfull$laz_t2, probs = seq(from = 0, to = 1, by = 0.1), na.rm = T))
+
+ggplot(plot, aes(x = t3_ln_agp, y = t3_ln_igf, color = factor(quart))) +
+       geom_point(shape = 16, size = 5) +
+       theme(legend.position = "right",
+            legend.background = element_rect(colour = "black"))+
+  facet_wrap(~quart)
+
+plot.long <- reshape2::melt(plot, id.vars = c("t3_ln_igf", "t3_ln_agp"), measure.vars = "laz_t3") %>% select(-variable)
+names(plot.long) <- c("igf", "agp", "laz")
+
+ggplot(plot.long, aes(x = agp, y = igf, z = laz)) +
+         stat_contour(geom = "polygon", aes(fill = ..level..)) +
+         geom_tile(aes(fill = laz)) +
+         stat_contour(bins = 15) +
+         labs(x = "agp", y = "igf")
+         guides(fill = guide_colorbar(title = "laz"))
+```
+
+
+```{r eval=FALSE, include=FALSE}
+#table data
+cor.test(dfull$t2_ln_agp, dfull$t2_ln_crp, use = "pairwise")
+cor.test(dfull$t3_ln_agp, dfull$t3_ln_crp, use = "pairwise")
+
+prop.below <- function(x, ref){
+  total <- dfull[which(!is.na(x)),]
+  nref <- total[which(x > ref),]
+  prop <- nrow(nref)/nrow(total)
+  return(prop)
+}
+
+prop.below(dfull$t2_ln_agp, 0)
+prop.below(dfull$t3_ln_agp, 0)
+prop.below(dfull$t2_ln_crp, 1)
+prop.below(dfull$t3_ln_crp, 1)
+```
+
