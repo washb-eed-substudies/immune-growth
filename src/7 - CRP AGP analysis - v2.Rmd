@@ -460,31 +460,31 @@ W2_immune.W23_anthro <- c(Wvars, Wvars_anthro23) %>% unique(.)
 adj_models <- NULL
 
 # concurrent t2
-X <- c("t2_ln_agp", "t2_ln_crp", "newcrp_t2")
+X <- c("t2_ln_agp", "t2_ln_crp")
 Y <- c("laz_t2", "waz_t2", "whz_t2" ,"hcz_t2") 
 adj_models <- gam.adj(df = adj_models,  Xvars = X, Yvars = Y, 
                       Wvars = W2_immmune.W2_anthro, data = d)
 
 # concurrent t3 
-X <- c("t3_ln_crp", "t3_ln_agp", "newcrp_t3")            
+X <- c("t3_ln_crp", "t3_ln_agp")            
 Y <- c("laz_t3", "waz_t3", "whz_t3" ,"hcz_t3") 
 adj_models <- gam.adj(df = adj_models,  Xvars = X, Yvars = Y, 
                       Wvars = W3_immune.W3_anthro, data = dfull)
 
 # subsequent
-X <- c("t2_ln_agp", "t2_ln_crp", "newcrp_t2")            
+X <- c("t2_ln_agp", "t2_ln_crp")            
 Y <- c("laz_t3", "whz_t3" ,"hcz_t3", "waz_t3") 
 adj_models <- gam.adj(df = adj_models, Xvars = X, Yvars = Y, 
                       Wvars = W2_immune.W3_anthro, data = d)
 
 # delta Zscore
-X <- c("t2_ln_agp", "t2_ln_crp", "newcrp_t2")            
+X <- c("t2_ln_agp", "t2_ln_crp")            
 Y <- c("delta_laz_t2_t3", "delta_whz_t2_t3", "delta_hcz_t2_t3", "delta_waz_t2_t3")
 adj_models <- gam.adj(df = adj_models,  Xvars = X, Yvars = Y, 
                       Wvars = W2_immune.W23_anthro, data = d)
 
 # velocity
-X <- c("t2_ln_agp", "t2_ln_crp", "newcrp_t2")            
+X <- c("t2_ln_agp", "t2_ln_crp")            
 Y <- c("len_velocity_t2_t3",  "hc_velocity_t2_t3", "wei_velocity_t2_t3")
 adj_models <- gam.adj(df = adj_models, Xvars = X, Yvars = Y, 
                       Wvars = W2_immune.W23_anthro, data = d)
