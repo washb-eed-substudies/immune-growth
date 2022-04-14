@@ -1,9 +1,12 @@
 
 dfull=d
 
-# velocity
-X <- c("t2_ln_agp")            
-Y <- c( "wei_velocity_t2_t3")
+# # velocity
+# X <- c("t2_ln_agp")            
+# Y <- c( "wei_velocity_t2_t3")
+
+X <- c("t2_ln_agp")
+Y <- c( "len_velocity_t2_t3")
 
     i=Xvars = X
   j=Yvars = Y
@@ -31,8 +34,9 @@ Y <- c( "wei_velocity_t2_t3")
   preds_adj_emm$res
 
   
-  emm_simul_plot <- emm_simul_CI(res_adj_emm$fit, res_adj_emm$dat, xlab="t2_ln_agp", ylab="wei_velocity_t2_t3", title="adj")
-  emm_simul_plot$p + geom_vline(xintercept=-0.2743744 ) + geom_vline(xintercept=0.3344291 )
+  
+  emm_simul_plot <- emm_simul_CI(res_adj_emm$fit, res_adj_emm$dat, xlab=i, ylab=j, title="adj")
+  emm_simul_plot$p + geom_vline(xintercept=preds_adj_emm$res$q1[1] ) + geom_vline(xintercept=preds_adj_emm$res$q3[1] )
  
   
   res_adj_main <- fit_RE_gam(d=dfunc, X=i, Y=j,  W=Wset[Wset!="tr"], V = NULL)
